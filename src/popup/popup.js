@@ -35,7 +35,7 @@ try {
   const host = currentUrl ? new URL(currentUrl).hostname : null;
   $('domain').textContent = host || 'No web page selected';
   if (host === 'www.youtube.com' || host === 'm.youtube.com') {
-    $('counter-note').textContent = 'YouTube assist skips ads only when a Skip button is available. Skips are not counted as blocked requests.';
+    $('youtube-note').hidden = false;
   }
   if (currentUrl) await scan();
 } catch (error) { $('message').textContent = error.message; }

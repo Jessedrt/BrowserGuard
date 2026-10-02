@@ -16,6 +16,7 @@ header .pill { margin-top: 5px; flex: none; }
 .stats span { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; line-height: 1.25; }
 .small { font-size: 11px; line-height: 1.5; }
 #counter-note { margin: 9px 2px 0; }
+#youtube-note { margin: 6px 2px 0; }
 .controls { padding: 16px 18px 7px; margin: 17px 0; }
 .controls .eyebrow { margin-bottom: 6px; }
 .actions .btn { flex: 1; font-size: 12px; }

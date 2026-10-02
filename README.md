@@ -14,6 +14,12 @@ Advertising and tracking requests expose browsing activity and can lead to unwan
 
 ## Features
 
+### v1.2.1 YouTube improvement
+
+- The YouTube assist starts at document start, looks for YouTube's visible Skip control without requiring an `ad-showing` CSS class, and rechecks when a countdown makes the control available. It still respects the ad toggle and allowlist.
+- Popup ad and tracker counts are labeled as totals across all sites. A YouTube note explains that clicking Skip does not increment the blocked-request counter.
+- YouTube can serve video ads through normal media delivery. BrowserGuard cannot reliably block every in-video ad without risking normal playback; unskippable ads can still play.
+
 ### v1.2 improvements
 
 - Warning colors now follow risk severity: amber for suspicious URL signals and red for high-risk, known-malicious, or user-blocked sites. The popup and threat history use the same distinction.
@@ -61,7 +67,7 @@ The worker observes top-level HTTP(S) navigation with `webNavigation.onBeforeNav
 
 Ads and trackers use separate static rulesets. Switching either off disables only that ruleset. Allowlist domains receive higher-priority DNR allow rules; custom and URLhaus domains receive dynamic DNR rules that block subresource requests. The allowlist also bypasses URL analysis. DNR does not inspect page content or downloaded files.
 
-The YouTube content script runs only on `www.youtube.com` and `m.youtube.com`. It observes player controls, presses Skip only when YouTube exposes a visible control, and closes ad overlays. It reads the local ad-blocking setting and allowlist, responds to changes immediately, and sends no browsing data. It does not speed or alter the video stream. YouTube can change its player controls at any time, so this assist is best effort.
+The YouTube content script runs only on `www.youtube.com` and `m.youtube.com`. It starts before page content loads, observes player controls, periodically checks for a newly available Skip control, and closes ad overlays. It reads the local ad-blocking setting and allowlist, responds to changes immediately, and sends no browsing data. It does not speed or alter the video stream. YouTube can change its player controls at any time, so this assist is best effort.
 
 ## Threat intelligence and privacy
 
