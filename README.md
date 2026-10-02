@@ -67,7 +67,7 @@ There is no `<all_urls>` host permission, `webRequest`, cookies permission, cont
 
 ## Install in Chrome
 
-Download the extension ZIP from the [latest GitHub release](https://github.com/Jessedrt/BrowserGuard/releases/latest), then extract it. The extracted folder must contain `manifest.json` at its top level. GitHub Packages is not used because BrowserGuard is an unpacked Chrome extension, not an npm package.
+The [latest GitHub release](https://github.com/Jessedrt/BrowserGuard/releases/latest) contains both a signed `.crx` Chrome extension package and a ZIP. On Windows and macOS, Chrome does not allow ordinary installation of a locally downloaded CRX outside the Chrome Web Store; use the ZIP for this academic demonstration. Extract it so that `manifest.json` is at the top level of the selected folder. GitHub Packages is not used because BrowserGuard is not an npm package.
 
 1. Open `chrome://extensions`.
 2. Turn on **Developer mode**.
