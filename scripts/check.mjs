@@ -3,7 +3,7 @@ import {join, extname} from 'node:path';
 const manifest = JSON.parse(await readFile(new URL('../manifest.json', import.meta.url), 'utf8'));
 if (manifest.manifest_version !== 3 || manifest.background?.type !== 'module') throw new Error('Invalid MV3 foundation');
 if (manifest.permissions.includes('webRequest') || manifest.host_permissions.includes('<all_urls>')) throw new Error('Excessive permission');
-for (const path of [manifest.background.service_worker, manifest.action.default_popup, manifest.options_page, ...Object.values(manifest.icons), ...Object.values(manifest.action.default_icon)]) {
+for (const path of [manifest.background.service_worker, manifest.action.default_popup, manifest.options_page, ...Object.values(manifest.icons), ...Object.values(manifest.action.default_icon), ...(manifest.content_scripts || []).flatMap(script => [...(script.js || []), ...(script.css || [])])]) {
   await readFile(new URL(`../${path}`, import.meta.url));
 }
 const ids = new Set();

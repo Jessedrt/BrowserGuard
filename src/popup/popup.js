@@ -28,7 +28,11 @@ try {
   render(await request({type: 'STATE'}));
   const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
   currentUrl = tab?.url && /^https?:/i.test(tab.url) ? tab.url : null;
-  $('domain').textContent = currentUrl ? new URL(currentUrl).hostname : 'No web page selected';
+  const host = currentUrl ? new URL(currentUrl).hostname : null;
+  $('domain').textContent = host || 'No web page selected';
+  if (host === 'www.youtube.com' || host === 'm.youtube.com') {
+    $('counter-note').textContent = 'YouTube assist skips ads only when a Skip button is available. Skips are not counted as blocked requests.';
+  }
   if (currentUrl) await scan();
 } catch (error) { $('message').textContent = error.message; }
 

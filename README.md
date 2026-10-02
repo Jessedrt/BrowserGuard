@@ -19,6 +19,7 @@ Advertising and tracking requests expose browsing activity and can lead to unwan
 - Threat history identifies each warning event separately, so continuing one warning updates its own event.
 
 - Independent ad and tracker blocking through two packaged `declarativeNetRequest` rulesets. Domain and endpoint rules are maintained in `rules/`.
+- YouTube ad assist blocks `/pagead/` network endpoints and presses an available Skip button or closes an ad overlay. It cannot guarantee removal of unskippable video ads. Assist actions are not added to network-block counters.
 - URL analysis for IP hosts, long domains, many subdomains, punycode, user-info tricks, encoding, complex paths, URL shorteners, unencrypted sensitive paths, and selected brand lookalikes.
 - Risk labels: **SAFE**, **LOW RISK**, **SUSPICIOUS**, **HIGH RISK**, and **KNOWN MALICIOUS**. A heuristic result never claims confirmed phishing.
 - A dated snapshot of the public [URLhaus hosts file](https://urlhaus.abuse.ch/downloads/hostfile/) is bundled for offline first-run protection. Daily downloads and manual refresh replace it with newer domains. The extension keeps working with the snapshot, heuristics, and custom blocklist when updates fail.
@@ -37,6 +38,7 @@ src/security/domains.js           URL parsing and domain validation
 src/security/analyzer.js          explainable heuristic risk scoring
 src/security/reputation.js        URLhaus feed parser
 src/security/seed.js              dated URLhaus offline snapshot
+src/youtube/ad-assist.js           YouTube-only ad controls
 src/background/service-worker.js  navigation monitoring, DNR state, statistics, messages
 src/storage/state.js              local settings and data defaults
 src/popup/                       compact current-site controls
@@ -50,6 +52,8 @@ scripts/check.mjs                manifest and rule audit
 The worker observes top-level HTTP(S) navigation with `webNavigation.onBeforeNavigate`, analyzes the URL, and uses `tabs.update` to show the extension warning page. It stores the pending original URL in Chrome's temporary `storage.session` for that tab, so the warning and one-time bypass survive a service-worker restart. Clicking **Continue anyway** grants one navigation attempt for that exact URL, expiring after two minutes. No persistent exception is added; session data is discarded when the browser session ends.
 
 Ads and trackers use separate static rulesets. Switching either off disables only that ruleset. Allowlist domains receive higher-priority DNR allow rules; custom and URLhaus domains receive dynamic DNR rules that block subresource requests. The allowlist also bypasses URL analysis. DNR does not inspect page content or downloaded files.
+
+The YouTube content script runs only on `www.youtube.com` and `m.youtube.com`. It observes player controls, presses Skip only when YouTube exposes a visible control, and closes ad overlays. It reads the local ad-blocking setting and allowlist, responds to changes immediately, and sends no browsing data. It does not speed or alter the video stream. YouTube can change its player controls at any time, so this assist is best effort.
 
 ## Threat intelligence and privacy
 
@@ -68,8 +72,9 @@ History records only warning events: timestamp, domain, origin (scheme and host,
 | `storage` | Save settings, counters, lists, feed, and threat events locally. |
 | `alarms` | Schedule daily feed updates. |
 | `https://urlhaus.abuse.ch/*` host access | Download the public URLhaus host file. |
+| YouTube content-script matches | Read visible ad controls on YouTube pages and press Skip when available. This adds a site-access notice when upgrading. |
 
-There is no `<all_urls>` host permission, `webRequest`, cookies permission, content script, or remote executable code. The extension-page CSP allows scripts from the extension itself only. User-controlled text is displayed with `textContent`.
+There is no `<all_urls>` host permission, `webRequest`, cookies permission, or remote executable code. The only content script is the YouTube ad assist on the two listed YouTube hosts. The extension-page CSP allows scripts from the extension itself only. User-controlled text is displayed with `textContent`.
 
 ## Install in Chrome
 
@@ -106,6 +111,7 @@ Ad and tracker counters increase only from Chrome's `onRuleMatchedDebug` event f
 ## Limitations
 
 - URL heuristics can miss phishing and can flag innocent sites. BrowserGuard does not claim to prove phishing or certify a site as safe.
+- YouTube may serve video ads through the same media endpoints as ordinary playback. Blocking those endpoints would risk breaking videos, so unskippable ads can still play. The site may also change its Skip controls. Reload open YouTube tabs after an extension update.
 - Chrome's `webNavigation` event is a notification, not a synchronous cancellation API. The interstitial is shown promptly, but a network connection may start before the worker switches tabs. DNR blocks known malicious subresources, while top-level warning navigation has this timing limit.
 - The URLhaus hosts file covers malware distribution domains, not every malicious or phishing site. Feed entries may change or include compromised legitimate hosts. The dashboard shows the last update and count.
 - URLhaus and custom DNR rules block matching subresources. The top-level interstitial is driven by navigation analysis; download contents are not scanned.
