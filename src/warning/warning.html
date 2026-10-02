@@ -1,0 +1,8 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Security warning · BrowserGuard</title><link rel="stylesheet" href="../ui/common.css"><link rel="stylesheet" href="warning.css"></head><body><main class="card">
+<div class="brand"><span class="brand-mark">!</span><span>BrowserGuard</span></div><div class="symbol">!</div><div class="eyebrow">Security warning</div><h1>BrowserGuard detected a potentially dangerous website</h1><p class="muted">Review the risk before continuing. Suspicious URL signals are indicators, not proof of phishing.</p>
+<div class="facts"><div><span>Threat</span><strong id="threat">Loading…</strong></div><div><span>Risk</span><strong id="risk">Loading…</strong></div><div><span>Domain</span><strong id="domain">Loading…</strong></div></div>
+<div class="reasons"><strong>Why this appeared</strong><ul id="reasons"></ul></div>
+<div class="btn-row"><button id="back" class="btn primary">Go back to safety</button><button id="advanced" class="btn">Advanced</button></div>
+<div id="advanced-panel" hidden><p class="muted">You can continue if you understand the risk. The exception applies to this navigation only.</p><button id="continue" class="btn danger">Continue anyway</button></div>
+<p id="message" role="status" class="error"></p>
+</main><script type="module" src="warning.js"></script></body></html>

@@ -1,0 +1,5 @@
+[
+  {"id":1001,"priority":1,"action":{"type":"block"},"condition":{"requestDomains":["google-analytics.com","analytics.google.com","googletagmanager.com","facebook.net","connect.facebook.net","bat.bing.com","static.hotjar.com","script.hotjar.com","hotjar.com","segment.io","segment.com","mixpanel.com","amplitude.com","fullstory.com","newrelic.com","nr-data.net","scorecardresearch.com","quantserve.com","demdex.net","krxd.net","bluekai.com","branch.io","appsflyer.com","adjust.com","mouseflow.com","heap.io","clarity.ms","pixel.wp.com","sentry.io"],"resourceTypes":["script","image","xmlhttprequest","ping","other"],"domainType":"thirdParty"}},
+  {"id":1002,"priority":1,"action":{"type":"block"},"condition":{"urlFilter":"/collect?v=","resourceTypes":["image","xmlhttprequest","ping"],"domainType":"thirdParty"}},
+  {"id":1003,"priority":1,"action":{"type":"block"},"condition":{"urlFilter":"/tr?","resourceTypes":["image","xmlhttprequest","ping"],"domainType":"thirdParty"}}
+]

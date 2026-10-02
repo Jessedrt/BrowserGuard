@@ -1,0 +1,212 @@
+import {analyzeUrl} from '../security/analyzer.js';
+import {normalizeDomain, parseWebUrl} from '../security/domains.js';
+import {parseUrlhausHostfile, URLHAUS_FEED} from '../security/reputation.js';
+import {getState, updateState} from '../storage/state.js';
+
+const RULE_ALLOW_START = 100000;
+const RULE_CUSTOM_START = 200000;
+const RULE_FEED_START = 300000;
+const MAX_FEED = 15000;
+const bypass = new Map();
+const pendingWarnings = new Map();
+let mutation = Promise.resolve();
+let rulesSync = Promise.resolve();
+
+function locked(work) {
+  const next = mutation.then(work, work);
+  mutation = next.catch(() => {});
+  return next;
+}
+
+function eventFor(analysis, action, originalUrl) {
+  return {
+    timestamp: new Date().toISOString(), domain: analysis.domain,
+    url: new URL(originalUrl).origin,
+    threatType: analysis.threatType || 'Suspicious website', risk: analysis.risk,
+    reasons: analysis.reasons, action
+  };
+}
+
+async function recordThreat(analysis, originalUrl, action = 'Blocked with warning') {
+  await locked(async () => {
+    const state = await getState();
+    const key = analysis.customMatch ? 'custom' : analysis.knownMatch ? 'malicious' : 'phishing';
+    state.stats[key]++;
+    state.history.unshift(eventFor(analysis, action, originalUrl));
+    await updateState({stats: state.stats, history: state.history.slice(0, 200)});
+  });
+}
+
+function domainRule(id, domain, type) {
+  return {
+    id, priority: type === 'allow' ? 100 : 10,
+    action: {type: type === 'allow' ? 'allowAllRequests' : 'block'},
+    condition: type === 'allow'
+      ? {requestDomains: [domain], resourceTypes: ['main_frame', 'sub_frame']}
+      : {requestDomains: [domain], resourceTypes: ['sub_frame', 'script', 'image', 'xmlhttprequest', 'media', 'object', 'other']}
+  };
+}
+
+async function syncRules() {
+  const state = await getState();
+  const enabled = [];
+  if (state.settings.ads) enabled.push('ads');
+  if (state.settings.trackers) enabled.push('trackers');
+  await chrome.declarativeNetRequest.updateEnabledRulesets({enableRulesetIds: enabled, disableRulesetIds: ['ads','trackers'].filter(x => !enabled.includes(x))});
+  const current = await chrome.declarativeNetRequest.getDynamicRules();
+  const addRules = [];
+  state.allowlist.forEach((domain, index) => {
+    addRules.push(domainRule(RULE_ALLOW_START + index, domain, 'allow'));
+    addRules.push({id: RULE_ALLOW_START + 30000 + index, priority: 100, action: {type: 'allow'}, condition: {initiatorDomains: [domain], resourceTypes: ['script','image','xmlhttprequest','sub_frame','media','font','ping','other']}});
+  });
+  if (state.settings.malicious) {
+    state.blocklist.forEach((domain, index) => addRules.push(domainRule(RULE_CUSTOM_START + index, domain, 'block')));
+    state.feed.slice(0, MAX_FEED).forEach((domain, index) => addRules.push(domainRule(RULE_FEED_START + index, domain, 'block')));
+  }
+  await chrome.declarativeNetRequest.updateDynamicRules({removeRuleIds: current.map(x => x.id), addRules});
+  await updateState({ruleError: null});
+}
+
+function scheduleSync() {
+  const next = rulesSync.then(syncRules, syncRules);
+  rulesSync = next.catch(async error => {
+    await updateState({ruleError: `Network rules could not be applied: ${error.message}`});
+    console.error('BrowserGuard rule sync failed:', error);
+  });
+  return next;
+}
+
+async function refreshFeed(force = false) {
+  const state = await getState();
+  if (!force && !state.settings.feedUpdates) return {updated: false, count: state.feed.length};
+  const response = await fetch(URLHAUS_FEED, {cache: 'no-store', credentials: 'omit'});
+  if (!response.ok) throw new Error(`Feed HTTP ${response.status}`);
+  const text = await response.text();
+  const feed = parseUrlhausHostfile(text, MAX_FEED);
+  if (feed.length < 10) throw new Error('Feed was empty or invalid');
+  await updateState({feed, feedUpdatedAt: new Date().toISOString(), feedSource: 'downloaded'});
+  await scheduleSync();
+  return {updated: true, count: feed.length};
+}
+
+async function navigate(details) {
+  if (details.frameId !== 0 || details.tabId < 0) return;
+  const url = parseWebUrl(details.url);
+  if (!url) return;
+  const state = await getState();
+  const analysis = analyzeUrl(details.url, {
+    allowlist: state.allowlist,
+    blocklist: state.settings.malicious ? state.blocklist : [],
+    intelligence: state.settings.malicious ? state.feed : []
+  });
+  const shouldWarn = (analysis.knownMatch || analysis.customMatch) && state.settings.malicious ||
+    !analysis.knownMatch && !analysis.customMatch && state.settings.phishing && ['SUSPICIOUS','HIGH RISK'].includes(analysis.risk);
+  if (!shouldWarn) { pendingWarnings.delete(details.tabId); return; }
+  const permit = bypass.get(details.tabId);
+  if (permit && permit.url === details.url && permit.expires > Date.now()) {
+    bypass.delete(details.tabId);
+    return;
+  }
+  const previous = pendingWarnings.get(details.tabId);
+  if (previous?.url === details.url && Date.now() - previous.time < 3000) return;
+  pendingWarnings.set(details.tabId, {url: details.url, analysis, time: Date.now()});
+  try {
+    await chrome.tabs.update(details.tabId, {url: chrome.runtime.getURL('src/warning/warning.html')});
+    await recordThreat(analysis, details.url);
+  } catch (error) {
+    pendingWarnings.delete(details.tabId);
+    console.error('BrowserGuard warning navigation failed:', error);
+  }
+}
+
+chrome.webNavigation.onBeforeNavigate.addListener(details => { navigate(details).catch(console.error); }, {url: [{schemes: ['http','https']}]});
+
+if (chrome.declarativeNetRequest.onRuleMatchedDebug) {
+  chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(info => {
+    const key = info.rule.rulesetId === 'ads' ? 'ads' : info.rule.rulesetId === 'trackers' ? 'trackers' : null;
+    if (!key) return;
+    locked(async () => {
+      const state = await getState();
+      state.stats[key]++;
+      await updateState({stats: state.stats});
+    }).catch(console.error);
+  });
+}
+
+chrome.runtime.onInstalled.addListener(() => {
+  scheduleSync().catch(console.error);
+  chrome.alarms.create('feed', {periodInMinutes: 1440});
+  refreshFeed().catch(error => console.warn('BrowserGuard feed unavailable; local protection remains active:', error));
+});
+chrome.runtime.onStartup.addListener(() => {
+  scheduleSync().catch(console.error);
+  chrome.alarms.create('feed', {periodInMinutes: 1440});
+});
+chrome.alarms.onAlarm.addListener(alarm => { if (alarm.name === 'feed') refreshFeed().catch(console.warn); });
+chrome.tabs.onRemoved.addListener(tabId => { bypass.delete(tabId); pendingWarnings.delete(tabId); });
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  handleMessage(message, sender).then(sendResponse, error => sendResponse({error: error.message}));
+  return true;
+});
+
+async function handleMessage(message, sender) {
+  if (!message || typeof message.type !== 'string') throw new Error('Invalid request');
+  if (message.type === 'STATE') return getState();
+  if (message.type === 'ANALYZE') {
+    const state = await getState();
+    return analyzeUrl(message.url, {allowlist: state.allowlist, blocklist: state.settings.malicious ? state.blocklist : [], intelligence: state.settings.malicious ? state.feed : []});
+  }
+  if (message.type === 'SET_SETTING') {
+    if (!['ads','trackers','phishing','malicious','feedUpdates'].includes(message.key) || typeof message.value !== 'boolean') throw new Error('Invalid setting');
+    const state = await getState();
+    state.settings[message.key] = message.value;
+    await updateState({settings: state.settings});
+    if (['ads','trackers','malicious'].includes(message.key)) await scheduleSync();
+    if (message.key === 'feedUpdates' && message.value) refreshFeed().catch(console.warn);
+    return getState();
+  }
+  if (message.type === 'ADD_DOMAIN' || message.type === 'REMOVE_DOMAIN') {
+    if (!['allowlist','blocklist'].includes(message.list)) throw new Error('Invalid list');
+    const domain = normalizeDomain(message.domain);
+    if (!domain) throw new Error('Enter a valid domain, such as example.com');
+    const state = await getState();
+    if (message.type === 'ADD_DOMAIN') state[message.list] = [...new Set([...state[message.list], domain])].sort();
+    else state[message.list] = state[message.list].filter(x => x !== domain);
+    await updateState({[message.list]: state[message.list]});
+    await scheduleSync();
+    return getState();
+  }
+  if (message.type === 'CLEAR_HISTORY') { await updateState({history: []}); return getState(); }
+  if (message.type === 'RESET_STATS') { await updateState({stats: {ads: 0, trackers: 0, phishing: 0, malicious: 0, custom: 0}}); return getState(); }
+  if (message.type === 'REFRESH_FEED') return refreshFeed(true);
+  if (message.type === 'WARNING') {
+    const tab = sender.tab || await chrome.tabs.get(message.tabId);
+    return pendingWarnings.get(tab.id) || null;
+  }
+  if (message.type === 'CONTINUE') {
+    const tab = sender.tab || await chrome.tabs.get(message.tabId);
+    const warning = pendingWarnings.get(tab.id);
+    if (!warning) throw new Error('Warning expired');
+    bypass.set(tab.id, {url: warning.url, expires: Date.now() + 120000});
+    pendingWarnings.delete(tab.id);
+    await locked(async () => {
+      const state = await getState();
+      const key = warning.analysis.customMatch ? 'custom' : warning.analysis.knownMatch ? 'malicious' : 'phishing';
+      state.stats[key] = Math.max(0, state.stats[key] - 1);
+      const event = state.history.find(item => item.domain === warning.analysis.domain && item.action === 'Blocked with warning');
+      if (event) event.action = 'User continued after warning';
+      await updateState({stats: state.stats, history: state.history});
+    });
+    await chrome.tabs.update(tab.id, {url: warning.url});
+    return {ok: true};
+  }
+  if (message.type === 'GO_BACK') {
+    const tab = sender.tab || await chrome.tabs.get(message.tabId);
+    pendingWarnings.delete(tab.id);
+    try { await chrome.tabs.goBack(tab.id); }
+    catch { await chrome.tabs.update(tab.id, {url: 'chrome://newtab/'}); }
+    return {ok: true};
+  }
+  throw new Error('Unknown request');
+}
