@@ -1,3 +1,5 @@
+import {riskTone} from '../ui/risk-tone.js';
+
 const $ = id => document.getElementById(id);
 const request = async message => {
   const response = await chrome.runtime.sendMessage(message);
@@ -20,8 +22,10 @@ function render(state) {
 async function scan() {
   if (!currentUrl) { $('message').textContent = 'Open a website to scan its URL.'; return; }
   const result = await request({type: 'ANALYZE', url: currentUrl});
-  $('risk').textContent = `${result.risk}${result.reasons.length ? ' · ' + result.reasons.join('; ') : ' · No suspicious URL signals found'}`;
-  $('risk').className = result.risk === 'SAFE' ? 'good-text' : result.risk === 'LOW RISK' ? 'muted' : 'error';
+  const tone = result.allowlisted ? 'neutral' : riskTone(result.risk);
+  $('risk').textContent = result.allowlisted ? 'ALLOWLISTED · BrowserGuard URL checks skipped for this site' : `${result.risk}${result.reasons.length ? ' · ' + result.reasons.join('; ') : ' · No known URL risk indicators; this is not a safety guarantee'}`;
+  $('risk').className = tone === 'neutral' ? 'muted' : `${tone}-text`;
+  document.querySelector('.site').dataset.tone = tone;
 }
 
 try {

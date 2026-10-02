@@ -53,6 +53,9 @@ section { margin-bottom: 38px; scroll-margin-top: 20px; }
 .history-item strong { font-size: 13px; overflow-wrap: anywhere; }
 .history-item small, .history-item p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
 .history-item p { grid-column: 1 / -1; }
+.history-item p.risk-good { color: var(--green); }
+.history-item p.risk-warn { color: var(--amber); }
+.history-item p.risk-danger { color: var(--red); }
 form { display: flex; gap: 9px; margin: 17px 0; }
 form input { flex: 1; min-width: 0; padding: 11px 13px; border: 1px solid var(--line); border-radius: 11px; background: var(--bg); color: var(--text); }
 form input::placeholder { color: var(--muted); }

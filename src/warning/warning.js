@@ -1,3 +1,5 @@
+import {riskTone} from '../ui/risk-tone.js';
+
 const $ = id => document.getElementById(id);
 const tab = await chrome.tabs.getCurrent();
 const request = async type => {
@@ -9,6 +11,7 @@ let warning;
 try {
   warning = await request('WARNING');
   if (!warning) throw new Error('This warning has expired.');
+  document.body.dataset.tone = riskTone(warning.analysis.risk);
   $('threat').textContent = warning.analysis.threatType || 'Suspicious website';
   $('risk').textContent = warning.analysis.risk;
   $('domain').textContent = warning.analysis.domain;

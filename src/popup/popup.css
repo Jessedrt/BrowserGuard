@@ -5,6 +5,9 @@ header { display: flex; align-items: flex-start; justify-content: space-between;
 .brand small { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: 0; }
 header .pill { margin-top: 5px; flex: none; }
 .site { padding: 19px; margin-bottom: 12px; border-color: #c8d9f0; background: linear-gradient(135deg, var(--panel) 70%, var(--accent2)); }
+.site[data-tone="good"] { border-color: #8dd2b0; background: linear-gradient(135deg, var(--panel) 65%, #e5f7ed); }
+.site[data-tone="warn"] { border-color: #e8bf77; background: linear-gradient(135deg, var(--panel) 65%, #fff1d7); }
+.site[data-tone="danger"] { border-color: #ee9aa5; background: linear-gradient(135deg, var(--panel) 65%, #ffe8ec); }
 .site strong { display: block; margin: 10px 0 8px; font-size: 20px; letter-spacing: -.025em; overflow-wrap: anywhere; }
 #risk { font-size: 12px; line-height: 1.55; }
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
@@ -18,3 +21,8 @@ header .pill { margin-top: 5px; flex: none; }
 .actions .btn { flex: 1; font-size: 12px; }
 .actions .btn:first-child { flex-basis: 100%; font-size: 13px; }
 #message { min-height: 17px; margin: 11px 2px 0; font-size: 12px; line-height: 1.4; color: var(--muted); }
+@media (prefers-color-scheme: dark) {
+  .site[data-tone="good"] { border-color: #357a5b; background: linear-gradient(135deg, var(--panel) 65%, #193c30); }
+  .site[data-tone="warn"] { border-color: #8f6d34; background: linear-gradient(135deg, var(--panel) 65%, #453621); }
+  .site[data-tone="danger"] { border-color: #99505d; background: linear-gradient(135deg, var(--panel) 65%, #462931); }
+}

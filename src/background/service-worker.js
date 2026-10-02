@@ -10,6 +10,39 @@ const MAX_FEED = 15000;
 let mutation = Promise.resolve();
 let rulesSync = Promise.resolve();
 
+async function showSiteBadge(tabId, analysis, settings) {
+  if (!chrome.action?.setBadgeText) return;
+  let text = '', color = '#6b7b90', title = 'BrowserGuard';
+  if (analysis.allowlisted) {
+    text = 'AL'; title = 'BrowserGuard: site is allowlisted; URL checks were skipped';
+  } else if (!settings.phishing && !settings.malicious) {
+    text = 'OFF'; title = 'BrowserGuard: phishing and malicious-site protection are off';
+  } else if (analysis.knownMatch || analysis.customMatch) {
+    text = '!'; color = '#bd2d40'; title = `BrowserGuard: ${analysis.risk.toLowerCase()} — review the warning`;
+  } else if (['HIGH RISK', 'SUSPICIOUS'].includes(analysis.risk) && !settings.phishing) {
+    text = 'OFF'; title = 'BrowserGuard: phishing protection is off';
+  } else if (analysis.risk === 'HIGH RISK') {
+    text = '!'; color = '#bd2d40'; title = 'BrowserGuard: high-risk URL — review the warning';
+  } else if (analysis.risk === 'SUSPICIOUS' || analysis.risk === 'LOW RISK') {
+    text = '?'; color = '#a86b00'; title = 'BrowserGuard: URL warning signs found — open the popup for details';
+  } else if (analysis.risk === 'SAFE') {
+    text = '✓'; color = '#087b59'; title = 'BrowserGuard: no known URL risk indicators; this is not a safety guarantee';
+  }
+  try {
+    await chrome.action.setBadgeText({tabId, text});
+    if (text) await chrome.action.setBadgeBackgroundColor({tabId, color});
+    await chrome.action.setTitle({tabId, title});
+  } catch (error) { console.warn('BrowserGuard badge could not be updated:', error); }
+}
+
+async function clearSiteBadge(tabId) {
+  if (!chrome.action?.setBadgeText) return;
+  try {
+    await chrome.action.setBadgeText({tabId, text: ''});
+    await chrome.action.setTitle({tabId, title: 'BrowserGuard'});
+  } catch (error) { console.warn('BrowserGuard badge could not be cleared:', error); }
+}
+
 const sessionKey = (kind, tabId) => `${kind}:${tabId}`;
 async function getSession(kind, tabId) {
   const key = sessionKey(kind, tabId);
@@ -111,6 +144,7 @@ async function navigate(details) {
   });
   const shouldWarn = (analysis.knownMatch || analysis.customMatch) && state.settings.malicious ||
     !analysis.knownMatch && !analysis.customMatch && state.settings.phishing && ['SUSPICIOUS','HIGH RISK'].includes(analysis.risk);
+  await showSiteBadge(details.tabId, analysis, state.settings);
   if (!shouldWarn) { await clearSession('warning', details.tabId); return; }
   const permit = await getSession('bypass', details.tabId);
   if (permit && permit.url === details.url && permit.expires > Date.now()) {
@@ -131,6 +165,10 @@ async function navigate(details) {
 }
 
 chrome.webNavigation.onBeforeNavigate.addListener(details => { navigate(details).catch(console.error); }, {url: [{schemes: ['http','https']}]});
+chrome.webNavigation.onCommitted.addListener(details => {
+  if (details.frameId !== 0 || details.tabId < 0) return;
+  if (!parseWebUrl(details.url) && details.url !== chrome.runtime.getURL('src/warning/warning.html')) clearSiteBadge(details.tabId);
+});
 
 if (chrome.declarativeNetRequest.onRuleMatchedDebug) {
   chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(info => {

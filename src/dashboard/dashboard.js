@@ -1,3 +1,5 @@
+import {riskTone} from '../ui/risk-tone.js';
+
 const $ = id => document.getElementById(id);
 const request = async message => {
   const response = await chrome.runtime.sendMessage(message);
@@ -34,6 +36,7 @@ function render(data) {
     const title = document.createElement('strong'); title.textContent = `${event.domain} · ${event.threatType}`;
     const time = document.createElement('small'); time.textContent = new Date(event.timestamp).toLocaleString();
     const details = document.createElement('p'); details.textContent = `${event.risk} · ${event.action} · ${(event.reasons || []).join('; ')}`;
+    details.className = `risk-${riskTone(event.risk)}`;
     row.append(title,time,details); $('history-list').append(row);
   }
   for (const list of ['allowlist','blocklist']) {

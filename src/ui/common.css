@@ -99,6 +99,8 @@ a { color: var(--accent); }
 .notice { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; color: var(--muted); font-size: 12px; line-height: 1.55; }
 .error { color: var(--red); }
 .good-text { color: var(--green); }
+.warn-text { color: var(--amber); }
+.danger-text { color: var(--red); }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

@@ -7,6 +7,8 @@ const session = {};
 const rules = new Map();
 const enabled = new Set(['ads','trackers']);
 const tabUpdates = [];
+const badges = new Map();
+const badgeTitles = new Map();
 const event = key => ({addListener: listener => { events[key] = listener; }});
 globalThis.chrome = {
   storage: {local: {
@@ -23,7 +25,12 @@ globalThis.chrome = {
     updateDynamicRules: async ({removeRuleIds,addRules}) => { removeRuleIds.forEach(x => rules.delete(x)); addRules.forEach(x => rules.set(x.id,x)); },
     onRuleMatchedDebug: event('ruleMatch')
   },
-  webNavigation: {onBeforeNavigate: event('navigate')},
+  webNavigation: {onBeforeNavigate: event('navigate'), onCommitted: event('committed')},
+  action: {
+    setBadgeText: async ({tabId, text}) => { badges.set(tabId, {...badges.get(tabId), text}); },
+    setBadgeBackgroundColor: async ({tabId, color}) => { badges.set(tabId, {...badges.get(tabId), color}); },
+    setTitle: async ({tabId, title}) => { badgeTitles.set(tabId, title); }
+  },
   runtime: {onInstalled: event('installed'), onStartup: event('startup'), onMessage: event('message'), getURL: path => `chrome-extension://test/${path}`},
   alarms: {onAlarm: event('alarm'), create: () => {}},
   tabs: {onRemoved: event('removed'), update: async (id, options) => {tabUpdates.push({id,...options}); return {id};}, get: async id => ({id}), goBack: async () => {}}
@@ -99,4 +106,26 @@ test('ad/tracker statistics count actual rule-match callbacks only', async () =>
   const state = await message({type:'STATE'});
   assert.equal(state.stats.ads, 1);
   assert.equal(state.stats.trackers, 1);
+});
+
+test('site badge communicates risk without claiming an allowlisted site is safe', async () => {
+  events.navigate({frameId:0,tabId:20,url:'https://example.com/'});
+  events.navigate({frameId:0,tabId:21,url:'http://192.0.2.4/login'});
+  events.navigate({frameId:0,tabId:22,url:'http://paypa1.example/verify'});
+  await tick();
+  assert.equal(badges.get(20).text, '✓');
+  assert.equal(badges.get(20).color, '#087b59');
+  assert.match(badgeTitles.get(20), /not a safety guarantee/);
+  assert.equal(badges.get(21).text, '?');
+  assert.equal(badges.get(21).color, '#a86b00');
+  assert.equal(badges.get(22).text, '!');
+  assert.equal(badges.get(22).color, '#bd2d40');
+  await message({type:'ADD_DOMAIN',list:'allowlist',domain:'example.com'});
+  events.navigate({frameId:0,tabId:23,url:'https://example.com/'});
+  await tick();
+  assert.equal(badges.get(23).text, 'AL');
+  events.committed({frameId:0,tabId:20,url:'chrome://newtab/'});
+  await tick();
+  assert.equal(badges.get(20).text, '');
+  await message({type:'REMOVE_DOMAIN',list:'allowlist',domain:'example.com'});
 });

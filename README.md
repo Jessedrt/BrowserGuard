@@ -14,7 +14,13 @@ Advertising and tracking requests expose browsing activity and can lead to unwan
 
 ## Features
 
-### v1.1 improvements
+### v1.2 improvements
+
+- Warning colors now follow risk severity: amber for suspicious URL signals and red for high-risk, known-malicious, or user-blocked sites. The popup and threat history use the same distinction.
+- A per-tab badge on the extension icon shows green for no known URL risk indicators, amber for URL warning signs, red for dangerous results, and neutral for allowlisted or disabled URL protection. Green is not a guarantee that a site is safe.
+- The badge uses the existing extension action and navigation access. BrowserGuard does not inject a status banner into every website or request broad host access for this feature.
+
+### Earlier UI improvements
 
 - Refined popup, dashboard, and warning page with responsive layouts, clearer status, keyboard focus, and dark-mode styling.
 - Warning state and one-time continue choices survive a Manifest V3 service-worker restart within the same browser session.
@@ -97,9 +103,9 @@ Run `npm test` for URL parsing, domain normalization, IP/punycode, subdomain and
 
 For a safe live demonstration:
 
-1. Open the popup on a normal HTTPS site and use **Scan current site**. A `SAFE` result means no configured signal was found, not that the site is guaranteed safe.
+1. Open `https://example.com/`, then look for the green extension-icon badge and use **Scan current site** in the popup. A `SAFE` result means no configured URL signal was found, not that the site is guaranteed safe.
 2. Add `test-blocked.example` to the custom blocklist. Navigate to `https://test-blocked.example/`. The reserved `.example` domain is a safe test fixture; the interstitial should show a **custom blocklist** match. Use **Go back to safety**.
-3. Open `http://paypa1.example/verify` to demonstrate a heuristic **HIGH RISK** warning without contacting a live phishing site. The domain is a reserved test fixture; the warning says **Suspected phishing**.
+3. Open `http://192.0.2.4/login` to demonstrate an amber **SUSPICIOUS** warning. Then open `http://paypa1.example/verify` to demonstrate a red heuristic **HIGH RISK** warning without contacting a live phishing site. Both use reserved test addresses; the warning says **Suspected phishing**, not confirmed phishing.
 4. Add `test-blocked.example` to the allowlist, then repeat the visit. It should bypass BrowserGuard's warning. Remove it afterward.
 5. To test DNR blocking, start a local server in the repository root, for example `python -m http.server 8000`, and visit `http://localhost:8000/tests/demo.html`. Its ad and tracker image requests should show as blocked by the extension in DevTools Network. Popup counters should increment in an unpacked install. Turn each protection off and reload to compare.
 6. Toggle protection, close and reopen the popup, and confirm the settings persist. Inspect the dashboard's real history, then clear it.
