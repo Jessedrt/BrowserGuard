@@ -4,6 +4,8 @@
 
 BrowserGuard is a working Manifest V3 cybersecurity training project. It blocks common ad and tracking network requests, analyzes website URLs for phishing indicators, checks domains against a locally stored malware-domain feed, and interrupts risky top-level navigation with a warning. It stores controls, statistics, and a short security-event history on the user's device.
 
+The current package targets **compatible Chromium-based browsers**, rather than every browser that supports extensions. Chrome is the demonstrated environment. Microsoft Edge and Brave use Chromium extension technology and can load unpacked extensions, but this release has not been fully tested feature by feature in those browsers. Other Chromium browsers require API-specific testing. The current ZIP is not a supported Firefox or Safari build; Firefox does not support the `background.service_worker` entry used here. See the [Edge extension overview](https://learn.microsoft.com/en-us/microsoft-edge/extensions/), [Brave extension support](https://support.brave.com/hc/en-us/articles/360017909112-How-can-I-add-extensions-to-Brave), and [Mozilla background compatibility notes](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/background).
+
 **BrowserGuard is a browser-level security tool. It is not a replacement for antivirus or endpoint security software.** It does not scan the computer or claim to find Trojans installed on it. Its malware protection is limited to malicious websites and download sources visible to the browser.
 
 ## The problem
@@ -76,18 +78,18 @@ History records only warning events: timestamp, domain, origin (scheme and host,
 
 There is no `<all_urls>` host permission, `webRequest`, cookies permission, or remote executable code. The only content script is the YouTube ad assist on the two listed YouTube hosts. The extension-page CSP allows scripts from the extension itself only. User-controlled text is displayed with `textContent`.
 
-## Install in Chrome
+## Install in a compatible Chromium browser
 
 The [latest GitHub release](https://github.com/Jessedrt/BrowserGuard/releases/latest) contains both a signed `.crx` Chrome extension package and a ZIP. On Windows and macOS, Chrome does not allow ordinary installation of a locally downloaded CRX outside the Chrome Web Store; use the ZIP for this academic demonstration. Extract it so that `manifest.json` is at the top level of the selected folder. GitHub Packages is not used because BrowserGuard is not an npm package.
 
-1. Open `chrome://extensions`.
+1. Open the extension page for your browser: `chrome://extensions`, `edge://extensions`, or `brave://extensions`.
 2. Turn on **Developer mode**.
 3. Click **Load unpacked**.
-4. Select this repository's root folder, the one containing `manifest.json`.
-5. Pin BrowserGuard using Chrome's Extensions menu. Open its popup and dashboard.
+4. Select the extracted folder containing `manifest.json` (or the repository root when working from source).
+5. Pin BrowserGuard using the browser's Extensions menu. Open its popup and dashboard.
 6. Wait for the first URLhaus update or click **Update now** in Dashboard → Settings. If the network is unavailable, the dashboard continues to use the bundled snapshot and labels it as such.
 
-Chrome 120 or newer is required. The project has no package dependencies or build step.
+Chrome 120 or newer is required for the demonstrated Chrome setup. Browser versions and API support vary elsewhere. The project has no package dependencies or build step.
 
 ## Testing and live demonstration
 
