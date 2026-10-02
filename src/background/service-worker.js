@@ -7,10 +7,20 @@ const RULE_ALLOW_START = 100000;
 const RULE_CUSTOM_START = 200000;
 const RULE_FEED_START = 300000;
 const MAX_FEED = 15000;
-const bypass = new Map();
-const pendingWarnings = new Map();
 let mutation = Promise.resolve();
 let rulesSync = Promise.resolve();
+
+const sessionKey = (kind, tabId) => `${kind}:${tabId}`;
+async function getSession(kind, tabId) {
+  const key = sessionKey(kind, tabId);
+  return (await chrome.storage.session.get(key))[key] || null;
+}
+async function setSession(kind, tabId, value) {
+  await chrome.storage.session.set({[sessionKey(kind, tabId)]: value});
+}
+async function clearSession(kind, tabId) {
+  await chrome.storage.session.remove(sessionKey(kind, tabId));
+}
 
 function locked(work) {
   const next = mutation.then(work, work);
@@ -18,21 +28,21 @@ function locked(work) {
   return next;
 }
 
-function eventFor(analysis, action, originalUrl) {
+function eventFor(id, analysis, action, originalUrl) {
   return {
-    timestamp: new Date().toISOString(), domain: analysis.domain,
+    id, timestamp: new Date().toISOString(), domain: analysis.domain,
     url: new URL(originalUrl).origin,
     threatType: analysis.threatType || 'Suspicious website', risk: analysis.risk,
     reasons: analysis.reasons, action
   };
 }
 
-async function recordThreat(analysis, originalUrl, action = 'Blocked with warning') {
+async function recordThreat(id, analysis, originalUrl, action = 'Blocked with warning') {
   await locked(async () => {
     const state = await getState();
     const key = analysis.customMatch ? 'custom' : analysis.knownMatch ? 'malicious' : 'phishing';
     state.stats[key]++;
-    state.history.unshift(eventFor(analysis, action, originalUrl));
+    state.history.unshift(eventFor(id, analysis, action, originalUrl));
     await updateState({stats: state.stats, history: state.history.slice(0, 200)});
   });
 }
@@ -101,20 +111,21 @@ async function navigate(details) {
   });
   const shouldWarn = (analysis.knownMatch || analysis.customMatch) && state.settings.malicious ||
     !analysis.knownMatch && !analysis.customMatch && state.settings.phishing && ['SUSPICIOUS','HIGH RISK'].includes(analysis.risk);
-  if (!shouldWarn) { pendingWarnings.delete(details.tabId); return; }
-  const permit = bypass.get(details.tabId);
+  if (!shouldWarn) { await clearSession('warning', details.tabId); return; }
+  const permit = await getSession('bypass', details.tabId);
   if (permit && permit.url === details.url && permit.expires > Date.now()) {
-    bypass.delete(details.tabId);
+    await clearSession('bypass', details.tabId);
     return;
   }
-  const previous = pendingWarnings.get(details.tabId);
+  const previous = await getSession('warning', details.tabId);
   if (previous?.url === details.url && Date.now() - previous.time < 3000) return;
-  pendingWarnings.set(details.tabId, {url: details.url, analysis, time: Date.now()});
+  const id = crypto.randomUUID();
+  await setSession('warning', details.tabId, {id, url: details.url, analysis, time: Date.now()});
   try {
     await chrome.tabs.update(details.tabId, {url: chrome.runtime.getURL('src/warning/warning.html')});
-    await recordThreat(analysis, details.url);
+    await recordThreat(id, analysis, details.url);
   } catch (error) {
-    pendingWarnings.delete(details.tabId);
+    await clearSession('warning', details.tabId);
     console.error('BrowserGuard warning navigation failed:', error);
   }
 }
@@ -143,7 +154,9 @@ chrome.runtime.onStartup.addListener(() => {
   chrome.alarms.create('feed', {periodInMinutes: 1440});
 });
 chrome.alarms.onAlarm.addListener(alarm => { if (alarm.name === 'feed') refreshFeed().catch(console.warn); });
-chrome.tabs.onRemoved.addListener(tabId => { bypass.delete(tabId); pendingWarnings.delete(tabId); });
+chrome.tabs.onRemoved.addListener(tabId => {
+  Promise.all([clearSession('bypass', tabId), clearSession('warning', tabId)]).catch(console.error);
+});
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   handleMessage(message, sender).then(sendResponse, error => sendResponse({error: error.message}));
@@ -182,19 +195,19 @@ async function handleMessage(message, sender) {
   if (message.type === 'REFRESH_FEED') return refreshFeed(true);
   if (message.type === 'WARNING') {
     const tab = sender.tab || await chrome.tabs.get(message.tabId);
-    return pendingWarnings.get(tab.id) || null;
+    return getSession('warning', tab.id);
   }
   if (message.type === 'CONTINUE') {
     const tab = sender.tab || await chrome.tabs.get(message.tabId);
-    const warning = pendingWarnings.get(tab.id);
+    const warning = await getSession('warning', tab.id);
     if (!warning) throw new Error('Warning expired');
-    bypass.set(tab.id, {url: warning.url, expires: Date.now() + 120000});
-    pendingWarnings.delete(tab.id);
+    await setSession('bypass', tab.id, {url: warning.url, expires: Date.now() + 120000});
+    await clearSession('warning', tab.id);
     await locked(async () => {
       const state = await getState();
       const key = warning.analysis.customMatch ? 'custom' : warning.analysis.knownMatch ? 'malicious' : 'phishing';
       state.stats[key] = Math.max(0, state.stats[key] - 1);
-      const event = state.history.find(item => item.domain === warning.analysis.domain && item.action === 'Blocked with warning');
+      const event = state.history.find(item => item.id === warning.id);
       if (event) event.action = 'User continued after warning';
       await updateState({stats: state.stats, history: state.history});
     });
@@ -203,7 +216,7 @@ async function handleMessage(message, sender) {
   }
   if (message.type === 'GO_BACK') {
     const tab = sender.tab || await chrome.tabs.get(message.tabId);
-    pendingWarnings.delete(tab.id);
+    await clearSession('warning', tab.id);
     try { await chrome.tabs.goBack(tab.id); }
     catch { await chrome.tabs.update(tab.id, {url: 'chrome://newtab/'}); }
     return {ok: true};

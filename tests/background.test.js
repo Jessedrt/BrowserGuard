@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 const events = {};
 const data = {};
+const session = {};
 const rules = new Map();
 const enabled = new Set(['ads','trackers']);
 const tabUpdates = [];
@@ -11,6 +12,10 @@ globalThis.chrome = {
   storage: {local: {
     get: async defaults => structuredClone({...defaults, ...data}),
     set: async patch => Object.assign(data, structuredClone(patch))
+  }, session: {
+    get: async key => ({[key]: structuredClone(session[key])}),
+    set: async patch => Object.assign(session, structuredClone(patch)),
+    remove: async key => { delete session[key]; }
   }},
   declarativeNetRequest: {
     updateEnabledRulesets: async ({enableRulesetIds,disableRulesetIds}) => { enableRulesetIds.forEach(x => enabled.add(x)); disableRulesetIds.forEach(x => enabled.delete(x)); },
@@ -59,6 +64,32 @@ test('warning navigation records a genuine event and one-time continue', async (
   events.navigate({frameId:0,tabId:7,url:'https://test-blocked.example/'});
   await tick();
   assert.equal((await message({type:'STATE'})).stats.custom, 0);
+});
+test('warning and one-time bypass survive a service-worker restart', async () => {
+  events.navigate({frameId:0,tabId:8,url:'https://test-blocked.example/'});
+  await tick();
+  assert.equal((await message({type:'WARNING',tabId:8})).analysis.risk, 'USER BLOCKED');
+  await import('../src/background/service-worker.js?restart=1');
+  assert.equal((await message({type:'WARNING',tabId:8})).url, 'https://test-blocked.example/');
+  await message({type:'CONTINUE',tabId:8});
+  await import('../src/background/service-worker.js?restart=2');
+  const before = (await message({type:'STATE'})).stats.custom;
+  events.navigate({frameId:0,tabId:8,url:'https://test-blocked.example/'});
+  await tick();
+  assert.equal((await message({type:'STATE'})).stats.custom, before);
+  assert.equal(await message({type:'WARNING',tabId:8}), null);
+});
+test('continuing one warning updates only its matching history event', async () => {
+  events.navigate({frameId:0,tabId:9,url:'https://test-blocked.example/'});
+  events.navigate({frameId:0,tabId:10,url:'https://test-blocked.example/'});
+  await tick();
+  const older = await message({type:'WARNING',tabId:9});
+  const newer = await message({type:'WARNING',tabId:10});
+  assert.notEqual(older.id, newer.id);
+  await message({type:'CONTINUE',tabId:9});
+  const history = (await message({type:'STATE'})).history;
+  assert.equal(history.find(item => item.id === older.id).action, 'User continued after warning');
+  assert.equal(history.find(item => item.id === newer.id).action, 'Blocked with warning');
 });
 test('ad/tracker statistics count actual rule-match callbacks only', async () => {
   events.ruleMatch({rule:{rulesetId:'ads'}});

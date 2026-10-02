@@ -1,1 +1,20 @@
-body{width:370px;min-height:520px}main{padding:18px}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.brand{font-size:18px}.site{padding:17px;margin-bottom:12px}.site strong{display:block;font-size:19px;margin:8px 0 5px;overflow-wrap:anywhere}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stats .card{padding:12px 8px;text-align:center;box-shadow:none}.stats strong{display:block;font-size:22px}.stats span{display:block;font-size:11px;color:var(--muted);margin-top:2px}.small{font-size:11px;line-height:1.4}.controls{padding:16px;margin:15px 0}.actions .btn{flex:1}.actions .btn:first-child{flex-basis:100%}#message{min-height:18px;font-size:12px;margin-bottom:0}
+body { width: 390px; min-height: 530px; }
+main { padding: 19px; }
+header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
+.brand { font-size: 18px; line-height: 1.1; }
+.brand small { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: 0; }
+header .pill { margin-top: 5px; flex: none; }
+.site { padding: 19px; margin-bottom: 12px; border-color: #c8d9f0; background: linear-gradient(135deg, var(--panel) 70%, var(--accent2)); }
+.site strong { display: block; margin: 10px 0 8px; font-size: 20px; letter-spacing: -.025em; overflow-wrap: anywhere; }
+#risk { font-size: 12px; line-height: 1.55; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.stats .card { padding: 14px 8px; text-align: center; box-shadow: none; }
+.stats strong { display: block; font-size: 24px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stats span { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; line-height: 1.25; }
+.small { font-size: 11px; line-height: 1.5; }
+#counter-note { margin: 9px 2px 0; }
+.controls { padding: 16px 18px 7px; margin: 17px 0; }
+.controls .eyebrow { margin-bottom: 6px; }
+.actions .btn { flex: 1; font-size: 12px; }
+.actions .btn:first-child { flex-basis: 100%; font-size: 13px; }
+#message { min-height: 17px; margin: 11px 2px 0; font-size: 12px; line-height: 1.4; color: var(--muted); }

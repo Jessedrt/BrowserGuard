@@ -12,6 +12,12 @@ Advertising and tracking requests expose browsing activity and can lead to unwan
 
 ## Features
 
+### v1.1 improvements
+
+- Refined popup, dashboard, and warning page with responsive layouts, clearer status, keyboard focus, and dark-mode styling.
+- Warning state and one-time continue choices survive a Manifest V3 service-worker restart within the same browser session.
+- Threat history identifies each warning event separately, so continuing one warning updates its own event.
+
 - Independent ad and tracker blocking through two packaged `declarativeNetRequest` rulesets. Domain and endpoint rules are maintained in `rules/`.
 - URL analysis for IP hosts, long domains, many subdomains, punycode, user-info tricks, encoding, complex paths, URL shorteners, unencrypted sensitive paths, and selected brand lookalikes.
 - Risk labels: **SAFE**, **LOW RISK**, **SUSPICIOUS**, **HIGH RISK**, and **KNOWN MALICIOUS**. A heuristic result never claims confirmed phishing.
@@ -41,7 +47,7 @@ tests/                           safe logic fixtures and local rule demo
 scripts/check.mjs                manifest and rule audit
 ```
 
-The worker observes top-level HTTP(S) navigation with `webNavigation.onBeforeNavigate`, analyzes the URL, and uses `tabs.update` to show the extension warning page. It stores the pending original URL only in worker memory for that tab. Clicking **Continue anyway** grants one navigation attempt for that exact URL, expiring after two minutes. No persistent exception is added.
+The worker observes top-level HTTP(S) navigation with `webNavigation.onBeforeNavigate`, analyzes the URL, and uses `tabs.update` to show the extension warning page. It stores the pending original URL in Chrome's temporary `storage.session` for that tab, so the warning and one-time bypass survive a service-worker restart. Clicking **Continue anyway** grants one navigation attempt for that exact URL, expiring after two minutes. No persistent exception is added; session data is discarded when the browser session ends.
 
 Ads and trackers use separate static rulesets. Switching either off disables only that ruleset. Allowlist domains receive higher-priority DNR allow rules; custom and URLhaus domains receive dynamic DNR rules that block subresource requests. The allowlist also bypasses URL analysis. DNR does not inspect page content or downloaded files.
 
