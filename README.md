@@ -67,6 +67,8 @@ There is no `<all_urls>` host permission, `webRequest`, cookies permission, cont
 
 ## Install in Chrome
 
+Download the extension ZIP from the [latest GitHub release](https://github.com/Jessedrt/BrowserGuard/releases/latest), then extract it. The extracted folder must contain `manifest.json` at its top level. GitHub Packages is not used because BrowserGuard is an unpacked Chrome extension, not an npm package.
+
 1. Open `chrome://extensions`.
 2. Turn on **Developer mode**.
 3. Click **Load unpacked**.
