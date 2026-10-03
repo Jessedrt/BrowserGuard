@@ -14,6 +14,10 @@ Advertising and tracking requests expose browsing activity and can lead to unwan
 
 ## Features
 
+### v1.6.2 dashboard layout
+
+- The dashboard uses the supplied larger typography, five-card overview, wider checker, and responsive navigation. Existing statistics, controls, history, and lists continue to use the same real data and actions.
+
 ### v1.6.1 compact popup
 
 - The popup now uses the supplied compact blue header, status icon, combined counters, two-column protection controls, and grouped actions. Detection and blocking behavior are unchanged.
