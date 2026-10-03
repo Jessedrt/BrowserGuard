@@ -1,5 +1,5 @@
 import {analyzeUrl} from '../security/analyzer.js';
-import {normalizeDomain, parseWebUrl} from '../security/domains.js';
+import {hostMatches, normalizeDomain, parseWebUrl} from '../security/domains.js';
 import {parseUrlhausHostfile, URLHAUS_FEED} from '../security/reputation.js';
 import {getState, updateState} from '../storage/state.js';
 
@@ -7,6 +7,10 @@ const RULE_ALLOW_START = 100000;
 const RULE_CUSTOM_START = 200000;
 const RULE_FEED_START = 300000;
 const MAX_FEED = 15000;
+const YOUTUBE_SCRIPTS = [
+  {id: 'browserguard-youtube-www', host: 'www.youtube.com'},
+  {id: 'browserguard-youtube-mobile', host: 'm.youtube.com'}
+];
 let mutation = Promise.resolve();
 let rulesSync = Promise.resolve();
 
@@ -107,13 +111,27 @@ async function syncRules() {
     state.feed.slice(0, MAX_FEED).forEach((domain, index) => addRules.push(domainRule(RULE_FEED_START + index, domain, 'block')));
   }
   await chrome.declarativeNetRequest.updateDynamicRules({removeRuleIds: current.map(x => x.id), addRules});
+  const registered = await chrome.scripting.getRegisteredContentScripts({ids: YOUTUBE_SCRIPTS.map(script => script.id)});
+  const active = new Set(registered.map(script => script.id));
+  for (const script of YOUTUBE_SCRIPTS) {
+    const wanted = state.settings.ads && !state.allowlist.some(domain => hostMatches(script.host, domain));
+    if (wanted && !active.has(script.id)) {
+      await chrome.scripting.registerContentScripts([{
+        id: script.id, matches: [`https://${script.host}/*`],
+        js: ['src/youtube/early-filter.js'], runAt: 'document_start',
+        world: 'MAIN', persistAcrossSessions: true
+      }]);
+    } else if (!wanted && active.has(script.id)) {
+      await chrome.scripting.unregisterContentScripts({ids: [script.id]});
+    }
+  }
   await updateState({ruleError: null});
 }
 
 function scheduleSync() {
   const next = rulesSync.then(syncRules, syncRules);
   rulesSync = next.catch(async error => {
-    await updateState({ruleError: `Network rules could not be applied: ${error.message}`});
+    await updateState({ruleError: `Protection rules could not be applied: ${error.message}`});
     console.error('BrowserGuard rule sync failed:', error);
   });
   return next;

@@ -27,6 +27,11 @@
   const allowed = () => allowlist.some(domain =>
     location.hostname === domain || location.hostname.endsWith(`.${domain}`));
 
+  function notifyEarlyFilter() {
+    window.postMessage({source: 'BrowserGuard', type: 'YOUTUBE_AD_FILTER',
+      enabled: settings.ads && !allowed()}, location.origin);
+  }
+
   function clickIfAvailable(button) {
     if (!button || button.disabled || !button.isConnected || !button.getClientRects().length) return false;
     if (button.getAttribute?.('aria-disabled') === 'true' || button.getAttribute?.('aria-hidden') === 'true') return false;
@@ -77,12 +82,14 @@
   chrome.storage.local.get({settings: {ads: true}, allowlist: []}).then(state => {
     settings = state.settings || settings;
     allowlist = Array.isArray(state.allowlist) ? state.allowlist : [];
+    notifyEarlyFilter();
     schedule();
   }).catch(() => {});
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local') return;
     if (changes.settings) settings = changes.settings.newValue || {ads: true};
     if (changes.allowlist) allowlist = Array.isArray(changes.allowlist.newValue) ? changes.allowlist.newValue : [];
+    notifyEarlyFilter();
     schedule();
   });
   new MutationObserver(schedule).observe(document, {

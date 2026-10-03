@@ -1,6 +1,6 @@
 # BrowserGuard
 
-**Development of a Chrome Extension for Ad, Tracker, Phishing and Malicious Website Protection**
+**Development of a Chromium Extension for Ad, Tracker, Phishing and Malicious Website Protection**
 
 BrowserGuard is a working Manifest V3 cybersecurity training project. It blocks common ad and tracking network requests, analyzes website URLs for phishing indicators, checks domains against a locally stored malware-domain feed, and interrupts risky top-level navigation with a warning. It stores controls, statistics, and a short security-event history on the user's device.
 
@@ -13,6 +13,12 @@ The current package targets **compatible Chromium-based browsers**, rather than 
 Advertising and tracking requests expose browsing activity and can lead to unwanted content. Phishing URLs may imitate trusted brands, while malware distribution sites can host dangerous downloads. BrowserGuard demonstrates several complementary browser defenses while keeping the distinction between *suspicious* URL patterns and *threat-intelligence* matches clear.
 
 ## Features
+
+### v1.5 early YouTube player filtering
+
+- A small YouTube-only script now runs at document start in the page's JavaScript world. It removes recognized ad metadata from initial and later player responses before YouTube uses those responses, while preserving video details, streaming data, and playback state. The existing network rules, page ad-slot hiding, and Skip helper remain as fallbacks.
+- BrowserGuard registers this script only when ad blocking is enabled for that YouTube host. Allowlisting `youtube.com` or the specific `www`/`m` host unregisters it. Changes also reach an already-open tab; reload open YouTube tabs after installing an update or enabling ad blocking so the document-start filter can run before playback.
+- This is best effort. If YouTube changes its response format or serves an ad outside the recognized data paths, a video ad can still play. BrowserGuard does not count filtered player fields as blocked network requests or claim a verified zero-ad rate.
 
 ### v1.4 local link checker
 
@@ -67,6 +73,7 @@ src/security/link-extractor.js    bounded link extraction from pasted text
 src/security/reputation.js        URLhaus feed parser
 src/security/seed.js              dated URLhaus offline snapshot
 src/youtube/ad-assist.js           YouTube-only ad controls and guarded ad advance
+src/youtube/early-filter.js        document-start player ad-metadata filter
 src/youtube/ad-assist.css          YouTube-only page ad-slot hiding
 src/background/service-worker.js  navigation monitoring, DNR state, statistics, messages
 src/storage/state.js              local settings and data defaults
@@ -82,7 +89,7 @@ The worker observes top-level HTTP(S) navigation with `webNavigation.onBeforeNav
 
 Ads and trackers use separate static rulesets. Switching either off disables only that ruleset. Allowlist domains receive higher-priority DNR allow rules; custom and URLhaus domains receive dynamic DNR rules that block subresource requests. The allowlist also bypasses URL analysis. DNR does not inspect page content or downloaded files.
 
-The YouTube content script runs only on `www.youtube.com` and `m.youtube.com`. It starts before page content loads, observes player controls, periodically checks for a newly available Skip control, and closes ad overlays. A CSS file hides known YouTube page ad slots only while ad blocking is active and the site is not allowlisted. The optional ad-advance control makes a seek attempt only when an ad state and on-screen countdown match a short video timeline. It reads local settings, responds to changes, and sends no browsing data. It never intentionally seeks an ordinary video. YouTube can reject the attempt or change its controls, so this remains best effort.
+The YouTube helper runs only on `www.youtube.com` and `m.youtube.com`. The worker uses `chrome.scripting` to register a document-start script in the page's MAIN world only when ad blocking is enabled and the host is not allowlisted. This script strips three recognized ad fields from player response objects in the initial page data and JSON responses. It does not touch the video stream, playback clock, or other response fields. The separate content script observes player controls, presses an available Skip button, closes ad overlays, and forwards local setting changes to the early filter. CSS hides known page ad slots. The optional ad-advance control makes a guarded seek attempt only on a confirmed ad timeline. No browsing data is sent by these scripts. YouTube can change its responses or reject the fallback, so this remains best effort.
 
 ## Threat intelligence and privacy
 
@@ -100,10 +107,11 @@ History records only warning events: timestamp, domain, origin (scheme and host,
 | `tabs` | Read the active tab URL and open the warning page. |
 | `storage` | Save settings, counters, lists, feed, and threat events locally. |
 | `alarms` | Schedule daily feed updates. |
+| `scripting` | Register or unregister the early YouTube filter at document start according to the ad setting and allowlist. |
 | `https://urlhaus.abuse.ch/*` host access | Download the public URLhaus host file. |
-| YouTube content-script matches | Read visible YouTube ad controls, hide ad slots, and optionally advance a clearly identified ad. This adds a site-access notice when upgrading. |
+| `www.youtube.com` and `m.youtube.com` host access | Run the early player filter and the existing YouTube ad helper on those two sites. |
 
-There is no `<all_urls>` host permission, `webRequest`, cookies permission, or remote executable code. The only content script is the YouTube ad assist on the two listed YouTube hosts. The extension-page CSP allows scripts from the extension itself only. User-controlled text is displayed with `textContent`.
+There is no `<all_urls>` host permission, `webRequest`, cookies permission, or remote executable code. YouTube scripts are limited to the two listed hosts. The extension-page CSP allows scripts from the extension itself only. User-controlled text is displayed with `textContent`.
 
 ## Install in a compatible Chromium browser
 
@@ -140,7 +148,7 @@ Ad and tracker counters increase only from Chrome's `onRuleMatchedDebug` event f
 ## Limitations
 
 - URL heuristics can miss phishing and can flag innocent sites. BrowserGuard does not claim to prove phishing or certify a site as safe.
-- YouTube may serve video ads through the same media endpoints as ordinary playback. Blocking those endpoints would risk breaking videos. YouTube may also reject the guarded ad-advance attempt, so unskippable ads can still play. Reload open YouTube tabs after an extension update.
+- YouTube may change its player data, serve ads outside the fields filtered here, or deliver video ads through the same media endpoints as ordinary playback. Blocking those endpoints would risk breaking videos. YouTube may also reject the guarded ad-advance attempt, so ads can still play. Reload open YouTube tabs after an extension update.
 - Chrome's `webNavigation` event is a notification, not a synchronous cancellation API. The interstitial is shown promptly, but a network connection may start before the worker switches tabs. DNR blocks known malicious subresources, while top-level warning navigation has this timing limit.
 - The URLhaus hosts file covers malware distribution domains, not every malicious or phishing site. Feed entries may change or include compromised legitimate hosts. The dashboard shows the last update and count.
 - URLhaus and custom DNR rules block matching subresources. The top-level interstitial is driven by navigation analysis; download contents are not scanned.
@@ -154,5 +162,7 @@ Import a regularly maintained filter list after evaluating its license and false
 ## Sources
 
 - [Chrome declarativeNetRequest API](https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest)
+- [Chrome scripting API](https://developer.chrome.com/docs/extensions/reference/api/scripting)
 - [Chrome webNavigation API](https://developer.chrome.com/docs/extensions/reference/api/webNavigation)
+- [uBlock Origin's maintained YouTube filters](https://github.com/uBlockOrigin/uAssets/blob/master/filters/filters.txt) (design reference; BrowserGuard uses its own small implementation)
 - [URLhaus public downloads](https://urlhaus.abuse.ch/downloads/hostfile/)

@@ -9,6 +9,7 @@ const enabled = new Set(['ads','trackers']);
 const tabUpdates = [];
 const badges = new Map();
 const badgeTitles = new Map();
+const contentScripts = new Map();
 const event = key => ({addListener: listener => { events[key] = listener; }});
 globalThis.chrome = {
   storage: {local: {
@@ -24,6 +25,11 @@ globalThis.chrome = {
     getDynamicRules: async () => [...rules.values()],
     updateDynamicRules: async ({removeRuleIds,addRules}) => { removeRuleIds.forEach(x => rules.delete(x)); addRules.forEach(x => rules.set(x.id,x)); },
     onRuleMatchedDebug: event('ruleMatch')
+  },
+  scripting: {
+    getRegisteredContentScripts: async ({ids}) => ids.map(id => contentScripts.get(id)).filter(Boolean),
+    registerContentScripts: async scripts => scripts.forEach(script => contentScripts.set(script.id, script)),
+    unregisterContentScripts: async ({ids}) => ids.forEach(id => contentScripts.delete(id))
   },
   webNavigation: {onBeforeNavigate: event('navigate'), onCommitted: event('committed')},
   action: {
@@ -42,15 +48,30 @@ function message(input, sender = {}) {
 const tick = () => new Promise(resolve => setTimeout(resolve, 25));
 
 test('settings persist and turn off only the selected DNR ruleset', async () => {
+  await message({type:'SET_SETTING',key:'ads',value:true});
+  assert.equal(contentScripts.size, 2);
+  assert.ok([...contentScripts.values()].every(script => script.world === 'MAIN' && script.runAt === 'document_start'));
   const state = await message({type:'SET_SETTING',key:'ads',value:false});
   assert.equal(state.settings.ads, false);
   assert.equal(enabled.has('ads'), false);
   assert.equal(enabled.has('trackers'), true);
+  assert.equal(contentScripts.size, 0);
   assert.equal((await message({type:'STATE'})).settings.ads, false);
   await message({type:'SET_SETTING',key:'ads',value:true});
   const optional = await message({type:'SET_SETTING',key:'youtubeAdvance',value:false});
   assert.equal(optional.settings.youtubeAdvance, false);
   assert.equal(enabled.has('ads'), true, 'YouTube advance does not disable network ad blocking');
+  assert.equal(contentScripts.size, 2);
+});
+test('YouTube early filtering respects the allowlist per host', async () => {
+  await message({type:'ADD_DOMAIN',list:'allowlist',domain:'www.youtube.com'});
+  assert.equal(contentScripts.has('browserguard-youtube-www'), false);
+  assert.equal(contentScripts.has('browserguard-youtube-mobile'), true);
+  await message({type:'ADD_DOMAIN',list:'allowlist',domain:'youtube.com'});
+  assert.equal(contentScripts.size, 0);
+  await message({type:'REMOVE_DOMAIN',list:'allowlist',domain:'www.youtube.com'});
+  await message({type:'REMOVE_DOMAIN',list:'allowlist',domain:'youtube.com'});
+  assert.equal(contentScripts.size, 2);
 });
 test('allowlist and blocklist produce validated dynamic rules', async () => {
   assert.match((await message({type:'ADD_DOMAIN',list:'blocklist',domain:'bad/path'})).error, /valid domain/);

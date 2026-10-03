@@ -39,9 +39,11 @@ function setup({ads = true, youtubeAdvance = true, allowlist = [], skipAvailable
     local: {get: async () => ({settings: {ads, youtubeAdvance}, allowlist})},
     onChanged: {addListener: listener => { onChanged = listener; }}
   }};
+  const messages = [];
+  const window = {postMessage: message => messages.push(message)};
   class MutationObserver { constructor(callback) { onMutation = callback; } observe() {} }
   runInNewContext(source, {
-    chrome, document, location: {hostname: 'www.youtube.com'}, MutationObserver,
+    chrome, document, window, location: {hostname: 'www.youtube.com', origin: 'https://www.youtube.com'}, MutationObserver,
     requestAnimationFrame: callback => frames.push(callback),
     getComputedStyle: () => ({visibility: 'visible'}),
     setInterval: callback => { onInterval = callback; }, Date
@@ -54,7 +56,7 @@ function setup({ads = true, youtubeAdvance = true, allowlist = [], skipAvailable
     change: changes => onChanged(changes, 'local'),
     mutate: () => onMutation(),
     tick: () => onInterval(),
-    skipButton
+    skipButton, messages
   };
 }
 

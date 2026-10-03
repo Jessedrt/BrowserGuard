@@ -6,6 +6,8 @@ if (manifest.permissions.includes('webRequest') || manifest.host_permissions.inc
 for (const path of [manifest.background.service_worker, manifest.action.default_popup, manifest.options_page, ...Object.values(manifest.icons), ...Object.values(manifest.action.default_icon), ...(manifest.content_scripts || []).flatMap(script => [...(script.js || []), ...(script.css || [])])]) {
   await readFile(new URL(`../${path}`, import.meta.url));
 }
+if (!manifest.permissions.includes('scripting') || !manifest.host_permissions.includes('https://www.youtube.com/*') || !manifest.host_permissions.includes('https://m.youtube.com/*')) throw new Error('YouTube early filter permissions are missing');
+await readFile(new URL('../src/youtube/early-filter.js', import.meta.url));
 const ids = new Set();
 for (const entry of manifest.declarative_net_request.rule_resources) {
   const rules = JSON.parse(await readFile(new URL(`../${entry.path}`, import.meta.url), 'utf8'));
