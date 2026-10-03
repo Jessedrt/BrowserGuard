@@ -14,6 +14,11 @@ Advertising and tracking requests expose browsing activity and can lead to unwan
 
 ## Features
 
+### v1.6 interface redesign
+
+- The popup, dashboard, and security warning now share the supplied blue theme, rounded cards and controls, responsive layout, and light/dark color support.
+- Safe, suspicious, and high-risk states retain distinct green, amber, and red treatments. The new presentation does not change threat detection or inflate protection counts.
+
 ### v1.5 early YouTube player filtering
 
 - A small YouTube-only script now runs at document start in the page's JavaScript world. It removes recognized ad metadata from initial and later player responses before YouTube uses those responses, while preserving video details, streaming data, and playback state. The existing network rules, page ad-slot hiding, and Skip helper remain as fallbacks.

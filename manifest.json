@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "BrowserGuard",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Local ad, tracker, phishing and malicious-site protection.",
   "icons": {"16": "assets/icon16.png", "48": "assets/icon48.png", "128": "assets/icon128.png"},
   "minimum_chrome_version": "120",
