@@ -15,6 +15,9 @@ try {
   $('threat').textContent = warning.analysis.threatType || 'Suspicious website';
   $('risk').textContent = warning.analysis.risk;
   $('domain').textContent = warning.analysis.domain;
+  $('detection-basis').textContent = warning.analysis.customMatch ? 'Detection basis: your custom blocklist'
+    : warning.analysis.knownMatch ? 'Detection basis: local URLhaus malware-domain feed match'
+    : `Detection basis: local URL patterns · signal score ${warning.analysis.score}/99 (not a probability)`;
   for (const reason of warning.analysis.reasons) {
     const item = document.createElement('li'); item.textContent = reason; $('reasons').append(item);
   }
@@ -23,6 +26,6 @@ $('advanced').addEventListener('click', () => { $('advanced-panel').hidden = !$(
 $('back').addEventListener('click', () => request('GO_BACK').catch(error => $('message').textContent = error.message));
 $('continue').addEventListener('click', async () => {
   if (!warning) return;
-  if (['HIGH RISK','KNOWN MALICIOUS'].includes(warning.analysis.risk) && !window.confirm(`Continue to ${warning.analysis.domain}? This site may be dangerous.`)) return;
+  if (['HIGH RISK','KNOWN MALICIOUS','USER BLOCKED'].includes(warning.analysis.risk) && !window.confirm(`Continue to ${warning.analysis.domain}? This site may be dangerous.`)) return;
   try { await request('CONTINUE'); } catch (error) { $('message').textContent = error.message; }
 });

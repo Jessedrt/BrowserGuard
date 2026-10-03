@@ -13,7 +13,7 @@ function render(state) {
   $('trackers-count').textContent = state.stats.trackers;
   $('threats-count').textContent = state.stats.phishing + state.stats.malicious;
   for (const input of document.querySelectorAll('[data-setting]')) input.checked = state.settings[input.dataset.setting];
-  const on = Object.values(state.settings).slice(0,4).filter(Boolean).length;
+  const on = ['ads','trackers','phishing','malicious'].filter(key => state.settings[key]).length;
   $('status').textContent = state.ruleError ? 'Rules need attention' : on === 4 ? 'Protection active' : on ? 'Partial protection' : 'Protection off';
   $('status').className = `pill ${state.ruleError ? 'danger' : on === 4 ? 'good' : on ? 'warn' : 'danger'}`;
   if (state.ruleError) $('message').textContent = state.ruleError;
@@ -23,8 +23,21 @@ async function scan() {
   if (!currentUrl) { $('message').textContent = 'Open a website to scan its URL.'; return; }
   const result = await request({type: 'ANALYZE', url: currentUrl});
   const tone = result.allowlisted ? 'neutral' : riskTone(result.risk);
-  $('risk').textContent = result.allowlisted ? 'ALLOWLISTED · BrowserGuard URL checks skipped for this site' : `${result.risk}${result.reasons.length ? ' · ' + result.reasons.join('; ') : ' · No known URL risk indicators; this is not a safety guarantee'}`;
+  $('risk').textContent = result.allowlisted ? 'ALLOWLISTED' : result.risk === 'SAFE' ? 'NO KNOWN URL INDICATORS' : result.risk;
   $('risk').className = tone === 'neutral' ? 'muted' : `${tone}-text`;
+  $('risk-basis').textContent = result.allowlisted ? 'URL checks skipped for this site'
+    : result.customMatch ? 'Matched your custom blocklist'
+    : result.knownMatch ? 'Matched the local URLhaus malware-domain feed'
+    : `Local URL heuristic · signal score ${result.score}/99${result.risk === 'SAFE' ? ' · not a safety guarantee' : ''}`;
+  $('risk-basis').hidden = false;
+  const list = $('risk-reasons');
+  list.replaceChildren();
+  for (const reason of result.allowlisted ? [] : result.reasons) {
+    const item = document.createElement('li');
+    item.textContent = reason;
+    list.append(item);
+  }
+  list.hidden = !list.childElementCount;
   document.querySelector('.site').dataset.tone = tone;
 }
 

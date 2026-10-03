@@ -47,6 +47,10 @@ test('settings persist and turn off only the selected DNR ruleset', async () => 
   assert.equal(enabled.has('ads'), false);
   assert.equal(enabled.has('trackers'), true);
   assert.equal((await message({type:'STATE'})).settings.ads, false);
+  await message({type:'SET_SETTING',key:'ads',value:true});
+  const optional = await message({type:'SET_SETTING',key:'youtubeAdvance',value:false});
+  assert.equal(optional.settings.youtubeAdvance, false);
+  assert.equal(enabled.has('ads'), true, 'YouTube advance does not disable network ad blocking');
 });
 test('allowlist and blocklist produce validated dynamic rules', async () => {
   assert.match((await message({type:'ADD_DOMAIN',list:'blocklist',domain:'bad/path'})).error, /valid domain/);

@@ -10,6 +10,9 @@ header .pill { margin-top: 5px; flex: none; }
 .site[data-tone="danger"] { border-color: #ee9aa5; background: linear-gradient(135deg, var(--panel) 65%, #ffe8ec); }
 .site strong { display: block; margin: 10px 0 8px; font-size: 20px; letter-spacing: -.025em; overflow-wrap: anywhere; }
 #risk { font-size: 12px; line-height: 1.55; }
+#risk { font-weight: 800; letter-spacing: .025em; }
+#risk-basis { margin-top: 5px; line-height: 1.45; }
+#risk-reasons { margin: 9px 0 0; padding-left: 18px; font-size: 11px; line-height: 1.5; }
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
 .stats .card { padding: 14px 8px; text-align: center; box-shadow: none; }
 .stats strong { display: block; font-size: 24px; line-height: 1.1; font-variant-numeric: tabular-nums; }

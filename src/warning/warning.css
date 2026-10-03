@@ -12,6 +12,7 @@ h1 + p { margin-bottom: 0; font-size: 14px; }
 .facts div { min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
 .facts span { display: block; margin-bottom: 6px; color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
 .facts strong { font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; }
+.detection-basis { margin: -12px 0 20px; font-size: 12px; line-height: 1.5; }
 #risk { color: var(--warning-color); }
 .reasons { padding: 18px 0 21px; border-top: 1px solid var(--line); }
 .reasons > strong { font-size: 14px; }

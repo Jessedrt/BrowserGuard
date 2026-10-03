@@ -1,7 +1,7 @@
 import {SEED_DOMAINS, SEED_UPDATED_AT} from '../security/seed.js';
 
 export const DEFAULTS = {
-  settings: {ads: true, trackers: true, phishing: true, malicious: true, feedUpdates: true},
+  settings: {ads: true, trackers: true, phishing: true, malicious: true, feedUpdates: true, youtubeAdvance: true},
   allowlist: [], blocklist: [], feed: SEED_DOMAINS, feedUpdatedAt: SEED_UPDATED_AT, feedSource: 'bundled',
   stats: {ads: 0, trackers: 0, phishing: 0, malicious: 0, custom: 0},
   history: [], ruleError: null

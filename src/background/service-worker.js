@@ -209,7 +209,7 @@ async function handleMessage(message, sender) {
     return analyzeUrl(message.url, {allowlist: state.allowlist, blocklist: state.settings.malicious ? state.blocklist : [], intelligence: state.settings.malicious ? state.feed : []});
   }
   if (message.type === 'SET_SETTING') {
-    if (!['ads','trackers','phishing','malicious','feedUpdates'].includes(message.key) || typeof message.value !== 'boolean') throw new Error('Invalid setting');
+    if (!['ads','trackers','phishing','malicious','feedUpdates','youtubeAdvance'].includes(message.key) || typeof message.value !== 'boolean') throw new Error('Invalid setting');
     const state = await getState();
     state.settings[message.key] = message.value;
     await updateState({settings: state.settings});

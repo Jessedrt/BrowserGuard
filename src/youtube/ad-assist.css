@@ -1,0 +1,13 @@
+/* YouTube-only cosmetic filtering. JS adds this class only while ad blocking is on
+   and the site is not allowlisted. These selectors never target the main video. */
+html.browserguard-ads-on #player-ads,
+html.browserguard-ads-on #masthead-ad,
+html.browserguard-ads-on ytd-ad-slot-renderer,
+html.browserguard-ads-on ytd-display-ad-renderer,
+html.browserguard-ads-on ytd-promoted-video-renderer,
+html.browserguard-ads-on ytd-in-feed-ad-layout-renderer,
+html.browserguard-ads-on ytd-banner-promo-renderer,
+html.browserguard-ads-on ytm-promoted-sparkles-web-renderer,
+html.browserguard-ads-on ytm-companion-ad-renderer {
+  display: none !important;
+}
