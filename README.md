@@ -14,6 +14,10 @@ Advertising and tracking requests expose browsing activity and can lead to unwan
 
 ## Features
 
+### v1.6.1 compact popup
+
+- The popup now uses the supplied compact blue header, status icon, combined counters, two-column protection controls, and grouped actions. Detection and blocking behavior are unchanged.
+
 ### v1.6 interface redesign
 
 - The popup, dashboard, and security warning now share the supplied blue theme, rounded cards and controls, responsive layout, and light/dark color support.
