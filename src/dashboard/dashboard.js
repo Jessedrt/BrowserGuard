@@ -1,4 +1,5 @@
 import {riskTone} from '../ui/risk-tone.js';
+import {extractWebLinks} from '../security/link-extractor.js';
 
 const $ = id => document.getElementById(id);
 const request = async message => {
@@ -7,7 +8,46 @@ const request = async message => {
   return response;
 };
 let state;
+let checkMode = 'url';
 function say(text) { $('message').textContent = text; $('message').classList.add('visible'); setTimeout(() => $('message').classList.remove('visible'), 5000); }
+function checkResult(analysis) {
+  const row = document.createElement('article'); row.className = 'check-result'; row.dataset.tone = analysis.allowlisted ? 'neutral' : riskTone(analysis.risk);
+  const head = document.createElement('div'); head.className = 'check-result-head';
+  const domain = document.createElement('strong'); domain.textContent = analysis.domain;
+  const badge = document.createElement('span'); badge.className = `pill ${analysis.allowlisted ? '' : riskTone(analysis.risk)}`;
+  badge.textContent = analysis.allowlisted ? 'ALLOWLISTED' : analysis.risk === 'SAFE' ? 'NO INDICATORS' : analysis.risk;
+  head.append(domain, badge);
+  const basis = document.createElement('p'); basis.className = 'check-basis';
+  basis.textContent = analysis.allowlisted ? 'Checks skipped for your allowlisted domain.'
+    : analysis.customMatch ? 'Matched your custom blocklist.'
+    : analysis.knownMatch ? 'Matched the local URLhaus malware-domain feed.'
+    : `Local URL patterns · signal score ${analysis.score}/99 (not a probability).`;
+  row.append(head, basis);
+  if (analysis.reasons.length && !analysis.allowlisted) {
+    const list = document.createElement('ul');
+    for (const reason of analysis.reasons) { const item = document.createElement('li'); item.textContent = reason; list.append(item); }
+    row.append(list);
+  }
+  return row;
+}
+function setCheckMode(mode) {
+  checkMode = mode;
+  for (const button of document.querySelectorAll('[data-check-mode]')) {
+    const selected = button.dataset.checkMode === mode;
+    button.classList.toggle('active', selected);
+    button.setAttribute('aria-pressed', String(selected));
+  }
+  $('check-input').hidden = mode !== 'url';
+  $('check-input').required = mode === 'url';
+  $('email-input').hidden = mode !== 'email';
+  $('email-input').required = mode === 'email';
+  $('check-label').textContent = mode === 'url' ? 'Website URL' : 'Email text with links';
+  $('check-label').htmlFor = mode === 'url' ? 'check-input' : 'email-input';
+  $('check-help').textContent = mode === 'url' ? 'The link is analyzed locally and never opened.' : 'Email text stays on your device and is not saved.';
+  $('check-form').querySelector('button[type="submit"]').textContent = mode === 'url' ? 'Check link' : 'Check email links';
+  $('check-error').hidden = true;
+  $('check-results').replaceChildren();
+}
 function item(text, onRemove) {
   const row = document.createElement('div'); row.className = 'domain-item';
   const label = document.createElement('span'); label.textContent = text;
@@ -48,6 +88,31 @@ function render(data) {
   }
 }
 try { render(await request({type:'STATE'})); } catch(error) { say(error.message); }
+for (const button of document.querySelectorAll('[data-check-mode]')) button.addEventListener('click', () => setCheckMode(button.dataset.checkMode));
+$('check-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  const input = checkMode === 'url' ? $('check-input').value.trim() : $('email-input').value;
+  const links = checkMode === 'url' ? [input] : extractWebLinks(input);
+  const error = $('check-error'); error.hidden = true;
+  const results = $('check-results'); results.replaceChildren();
+  if (checkMode === 'url' && (!/^https?:\/\//i.test(input) || input.length > 2048)) {
+    error.textContent = 'Enter a complete HTTP or HTTPS URL of up to 2,048 characters.'; error.hidden = false; return;
+  }
+  if (checkMode === 'email' && !links.length) {
+    error.textContent = 'No complete HTTP or HTTPS links found in this text.'; error.hidden = false; return;
+  }
+  const submit = $('check-form').querySelector('button[type="submit"]'); submit.disabled = true;
+  try {
+    for (const url of links) {
+      const analysis = await request({type:'ANALYZE', url});
+      if (analysis.risk === 'UNSUPPORTED') {
+        error.textContent = 'One link could not be analyzed. Check its format.'; error.hidden = false; continue;
+      }
+      results.append(checkResult(analysis));
+    }
+  } catch (failure) { error.textContent = failure.message; error.hidden = false; }
+  finally { submit.disabled = false; }
+});
 for (const input of document.querySelectorAll('[data-setting]')) input.addEventListener('change', async () => {
   input.disabled = true;
   try { render(await request({type:'SET_SETTING', key:input.dataset.setting, value:input.checked})); say('Setting saved.'); }

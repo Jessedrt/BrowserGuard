@@ -14,6 +14,12 @@ Advertising and tracking requests expose browsing activity and can lead to unwan
 
 ## Features
 
+### v1.4 local link checker
+
+- The dashboard can inspect a pasted HTTP(S) URL or extract up to ten explicit links from pasted email text. It shows the domain, risk label, detection basis, and individual reasons using BrowserGuard's existing local analysis and blocklists.
+- Pasted email text is not uploaded, opened, or saved. The checker does not analyze sender headers, attachments, DNS, redirects, or email content for phishing language. A low-risk result is not a safety guarantee.
+- The public project site offers a URL-structure-only version of the link checker. It does not access the extension's live feed or local lists.
+
 ### v1.3 aggressive filtering and clearer verdicts
 
 - Expanded packaged DNR rules for known ad-serving domains. These are static, reviewable rules and require no new permissions.
@@ -57,6 +63,7 @@ rules/ads.json                    ad domains and endpoints
 rules/trackers.json               tracker domains and pixels
 src/security/domains.js           URL parsing and domain validation
 src/security/analyzer.js          explainable heuristic risk scoring
+src/security/link-extractor.js    bounded link extraction from pasted text
 src/security/reputation.js        URLhaus feed parser
 src/security/seed.js              dated URLhaus offline snapshot
 src/youtube/ad-assist.js           YouTube-only ad controls and guarded ad advance

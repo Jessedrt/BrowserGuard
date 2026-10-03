@@ -60,5 +60,6 @@ for (const input of document.querySelectorAll('[data-setting]')) input.addEventL
   finally { input.disabled = false; }
 });
 $('scan').addEventListener('click', () => scan().catch(error => $('message').textContent = error.message));
+$('check-link').addEventListener('click', () => chrome.tabs.create({url: chrome.runtime.getURL('src/dashboard/dashboard.html#check')}));
 $('details').addEventListener('click', () => chrome.tabs.create({url: chrome.runtime.getURL('src/dashboard/dashboard.html#history')}));
 $('dashboard').addEventListener('click', () => chrome.runtime.openOptionsPage());

@@ -24,6 +24,7 @@ header .pill { margin-top: 5px; flex: none; }
 .controls .eyebrow { margin-bottom: 6px; }
 .actions .btn { flex: 1; font-size: 12px; }
 .actions .btn:first-child { flex-basis: 100%; font-size: 13px; }
+.actions .btn:nth-child(2) { flex-basis: 100%; }
 #message { min-height: 17px; margin: 11px 2px 0; font-size: 12px; line-height: 1.4; color: var(--muted); }
 @media (prefers-color-scheme: dark) {
   .site[data-tone="good"] { border-color: #357a5b; background: linear-gradient(135deg, var(--panel) 65%, #193c30); }

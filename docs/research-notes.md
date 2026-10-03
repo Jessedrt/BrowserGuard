@@ -1,4 +1,4 @@
-# Design references for BrowserGuard v1.3
+# Design references for BrowserGuard
 
 BrowserGuard uses its own implementation. No uBlock Origin or PhishScan source code, filter files, threat results, branding, or API responses are bundled.
 
@@ -13,3 +13,9 @@ BrowserGuard's ad list remains curated in `rules/ads.json`; new domains must be 
 [PhishScan](https://phishscan.io/) presents an explainable verdict with individual threat indicators and offers server-side checks such as DNS, WHOIS, redirects, and external reputation sources. BrowserGuard adopts the useful presentation principle: the popup and warning page show the actual detection basis and reasons. BrowserGuard does **not** call PhishScan, perform those server-side checks, send browsing URLs to it, or display a fabricated AI verdict. Its local URL heuristics and local URLhaus feed are described separately in the interface.
 
 PhishScan's UI and product text were not copied. A future optional reputation integration would need a documented API, an explicit privacy disclosure, and a backend proxy for any secret key.
+
+## v1.4 application
+
+PhishScan puts a link checker near the start of its experience and presents a separate reason for each indicator. BrowserGuard now provides a local URL and pasted-email-link checker in the dashboard, with a direct popup shortcut. The public project site has a matching checker. Its dark scan card, two clear modes, and result colors use BrowserGuard's own layout and styling.
+
+BrowserGuard extracts only explicit HTTP(S) links from pasted text and analyzes those URLs. It does not assess sender authenticity, message wording, attachments, redirect destinations, DNS, WHOIS, or VirusTotal results. This distinction is shown beside the checker so an academic demonstration does not imply capabilities it lacks.
