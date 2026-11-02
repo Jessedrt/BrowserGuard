@@ -1,3 +1,5 @@
 # BrowserGuard security tools
 User-agent: *
 Allow: /
+
+Sitemap: https://unique-fox-c13dba.netlify.app/sitemap.xml
