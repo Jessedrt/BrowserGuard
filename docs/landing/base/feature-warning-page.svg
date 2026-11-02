@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="640" height="640">
+<defs>
+  <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#F4F8FF"/><stop offset="1" stop-color="#E7F0FF"/>
+  </linearGradient>
+  <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#3B78FF"/><stop offset="1" stop-color="#1C4FD8"/>
+  </linearGradient>
+  <filter id="soft" x="-25%" y="-25%" width="150%" height="150%">
+    <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#2F6BFF" flood-opacity="0.16"/>
+  </filter>
+</defs>
+<rect width="640" height="640" rx="40" fill="url(#tile)"/>
+<circle cx="320" cy="320" r="196" fill="#FFFFFF" filter="url(#soft)"/>
+<circle cx="320" cy="320" r="196" fill="none" stroke="#D9E6FD" stroke-width="3"/>
+<circle cx="320" cy="320" r="196" fill="none" stroke="#2F6BFF" stroke-width="3"
+        stroke-dasharray="2 26" stroke-linecap="round" opacity="0.45"/>
+
+<g fill="none" stroke="#2258E8" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="150" y="182" width="340" height="270" rx="26"/>
+  <path d="M150 240 H490"/>
+  <circle cx="192" cy="211" r="1"/>
+</g>
+<circle cx="192" cy="211" r="9" fill="#2258E8"/>
+<circle cx="226" cy="211" r="9" fill="#8FB0FF"/>
+<circle cx="260" cy="211" r="9" fill="#8FB0FF"/>
+<path d="M320 290 L382 396 H258 Z" fill="#FFF3E0" stroke="#B36A00" stroke-width="13" stroke-linejoin="round"/>
+<path d="M320 328 v34" stroke="#B36A00" stroke-width="15" stroke-linecap="round"/>
+<circle cx="320" cy="380" r="9" fill="#B36A00"/>
+</svg>
