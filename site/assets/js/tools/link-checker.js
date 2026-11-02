@@ -152,7 +152,7 @@ for (const sample of document.querySelectorAll('[data-sample]')) {
   });
 }
 
-// Deep link from the homepage: /tools/link-checker.html?url=https%3A%2F%2F...
+// Deep link from the homepage: /tools/link-checker?url=https%3A%2F%2F...
 const preset = new URLSearchParams(location.search).get('url');
 if (preset) {
   $('url-input').value = preset;

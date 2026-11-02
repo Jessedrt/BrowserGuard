@@ -41,8 +41,13 @@ for (const file of htmlFiles) {
     const clean = target.split('#')[0].split('?')[0];
     if (!clean) continue;
     const resolved = resolve(dirname(file), clean);
-    try { await stat(resolved); }
-    catch { problems.push(`${page}: broken reference "${target}"`); }
+    // Links are written without the .html suffix, matching what Netlify serves.
+    const candidates = clean.endsWith('/') ? [resolved] : [resolved, `${resolved}.html`];
+    let ok = false;
+    for (const candidate of candidates) {
+      try { await stat(candidate); ok = true; break; } catch { /* try the next form */ }
+    }
+    if (!ok) problems.push(`${page}: broken reference "${target}"`);
   }
 
   // 2. external hosts that the page can actually navigate to or fetch.

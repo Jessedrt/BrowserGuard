@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://unique-fox-c13dba.netlify.app/about.html</loc>
+    <loc>https://broswerguard.netlify.app/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://unique-fox-c13dba.netlify.app/extension.html</loc>
+    <loc>https://broswerguard.netlify.app/extension</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://unique-fox-c13dba.netlify.app/</loc>
+    <loc>https://broswerguard.netlify.app/</loc>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://unique-fox-c13dba.netlify.app/tools/link-checker.html</loc>
+    <loc>https://broswerguard.netlify.app/tools/link-checker</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://unique-fox-c13dba.netlify.app/tools/password-generator.html</loc>
+    <loc>https://broswerguard.netlify.app/tools/password-generator</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://unique-fox-c13dba.netlify.app/tools/password-strength.html</loc>
+    <loc>https://broswerguard.netlify.app/tools/password-strength</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://unique-fox-c13dba.netlify.app/tools/privacy-check.html</loc>
+    <loc>https://broswerguard.netlify.app/tools/privacy-check</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

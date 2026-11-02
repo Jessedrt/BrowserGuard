@@ -30,7 +30,11 @@ try {
 const decode = value => value
   .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
 const esc = value => decode(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-const pageUrl = path => (path === 'index.html' ? `${base}/` : `${base}/${path.split('\\').join('/')}`);
+// Netlify serves these pages without the .html suffix (and redirects it away),
+// so the canonical form is the clean URL — not a URL that bounces.
+const pageUrl = path => (path === 'index.html'
+  ? `${base}/`
+  : `${base}/${path.replace(/\.html$/, '').split('\\').join('/')}`);
 
 async function walk(directory) {
   const files = [];
