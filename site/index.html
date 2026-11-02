@@ -50,9 +50,16 @@
           <h1 class="hero-title">Know what a link<br>will do <em>before</em> you click.</h1>
           <p class="lede">Four security checks that run entirely in your browser. Paste a link, test a password, see what your browser leaks — no account, nothing uploaded.</p>
 
+          <form class="hero-form" id="quick-check" autocomplete="off">
+            <label class="sr-only" for="quick-url">Paste a link to check</label>
+            <input id="quick-url" name="url" type="text" inputmode="url" spellcheck="false" placeholder="Paste a link — https://…" required>
+            <button class="btn btn-primary" type="submit">Check it</button>
+          </form>
+          <p class="hero-note">Nothing is uploaded — the address is analysed in this browser, then shown on the next page.</p>
+
           <div class="hero-actions">
-            <a class="btn btn-primary" href="tools/link-checker">Check a link</a>
             <a class="btn" href="extension">See the extension</a>
+            <a class="btn btn-ghost" href="#tools">Browse the four tools</a>
           </div>
 
           <div class="trust-row">

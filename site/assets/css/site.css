@@ -718,3 +718,23 @@ details.faq p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
 }
 .site-footer li a:hover { color: #8fb4ff; }
 .site-footer .logo { color: #fff; }
+
+/* --- hero quick check ------------------------------------------------------
+   The page opens on the thing the product does: drop a link in, get a reason. */
+.hero-form { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; max-width: 540px; }
+.hero-form input {
+  flex: 1 1 240px; min-width: 0;
+  padding: 13px 18px; border-radius: 100px;
+  border: 1.5px solid rgba(255, 255, 255, .22);
+  background: rgba(255, 255, 255, .08); color: #fff;
+  font: inherit; font-size: 15px;
+}
+.hero-form input::placeholder { color: #93a8d8; }
+.hero-form input:focus {
+  outline: 2px solid #6c93ff; outline-offset: 2px;
+  border-color: #6c93ff; background: rgba(255, 255, 255, .13);
+}
+.hero-form .btn { flex: none; }
+.hero-note { margin: 12px 0 0; font-size: 12.5px; line-height: 1.55; color: #8fa6d4; max-width: 46ch; }
+.hero-actions { margin-top: 18px; }
+.hero-dark .btn-ghost { background: transparent; border-color: rgba(255, 255, 255, .18); }
