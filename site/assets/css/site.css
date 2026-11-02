@@ -375,10 +375,6 @@ input[type="range"] { flex: 1; accent-color: var(--blue); height: 24px; }
 @media (max-width: 620px) { .signal { grid-template-columns: 1fr; gap: 4px; } }
 
 /* accordion */
-details.faq { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 16px 18px; }
-details.faq + details.faq { margin-top: 10px; }
-details.faq summary { cursor: pointer; font-weight: 700; font-size: 15px; }
-details.faq p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
 
 /* footer */
 .site-footer { padding: 46px 0 34px; border-top: 1px solid var(--line); background: var(--panel); margin-top: 20px; }
@@ -426,67 +422,190 @@ details.faq p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
 .panel-inline { padding: 20px; margin-top: 14px; }
 
 /* ============================================================================
-   Product-first landing components (v2).
+   Product-first components (v2) + theming.
    The interface panels below are real HTML/CSS, not screenshots or AI art, so
    they stay sharp at any size and never contradict what the product does.
+
+   Every dark surface (header, hero, page-hero, footer) is driven by the
+   --band-* tokens, so the same rules render in the light and the dark theme.
    ========================================================================= */
 
-/* dark hero band: local token overrides so existing components adapt */
-.hero-dark {
-  --ink: #ffffff;
-  --ink-2: #ccd9f6;
-  --muted: #93a8d8;
-  --line: #223367;
-  --line-strong: #2f4799;
-  --panel: #0d1738;
-  --pale: #16244f;
-  --pale-2: #0a1230;
+/* --- theme tokens ---------------------------------------------------------
+   Light is the default. The OS preference flips it, and an explicit choice
+   (data-theme on <html>, written by assets/js/theme.js) always wins, in either
+   direction. */
+:root {
+  --band: #edf3ff;
+  --band-2: #ffffff;
+  --band-3: #e4edff;
+  --band-line: #d7e3f8;
+  --band-ink: #0f2257;
+  --band-ink-2: #29406f;
+  --band-muted: #55689a;
+  --band-accent: #1747d6;
+  --band-em: #2f6bff;
+  --band-check: #0a7f5a;
+  --band-glow-1: rgba(47, 107, 255, .22);
+  --band-glow-2: rgba(91, 168, 255, .18);
+  --band-grid: rgba(15, 34, 87, .05);
+  --band-btn-bg: rgba(255, 255, 255, .8);
+  --band-btn-bg-h: #ffffff;
+  --band-btn-border: #c3d5f5;
+  --band-btn-border-h: #2f6bff;
+  --band-input-bg: #ffffff;
+  --band-frame: #dbe6fa;
+  --band-shadow: 0 30px 70px rgba(15, 34, 87, .12), 0 6px 18px rgba(15, 34, 87, .07);
+  --band-card-shadow: 0 22px 50px rgba(15, 34, 87, .12);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --band: #0a1130;
+    --band-2: #0d1738;
+    --band-3: #16244f;
+    --band-line: #223367;
+    --band-ink: #ffffff;
+    --band-ink-2: #ccd9f6;
+    --band-muted: #93a8d8;
+    --band-accent: #8fb4ff;
+    --band-em: #7ea6ff;
+    --band-check: #6fdcb4;
+    --band-glow-1: rgba(47, 107, 255, .42);
+    --band-glow-2: rgba(91, 168, 255, .28);
+    --band-grid: rgba(255, 255, 255, .045);
+    --band-btn-bg: rgba(255, 255, 255, .06);
+    --band-btn-bg-h: rgba(255, 255, 255, .12);
+    --band-btn-border: rgba(255, 255, 255, .22);
+    --band-btn-border-h: rgba(255, 255, 255, .4);
+    --band-input-bg: rgba(255, 255, 255, .08);
+    --band-frame: rgba(255, 255, 255, .14);
+    --band-shadow: 0 40px 90px rgba(3, 8, 24, .55), 0 8px 24px rgba(3, 8, 24, .3);
+    --band-card-shadow: 0 26px 60px rgba(10, 17, 48, .4);
+  }
+}
+
+/* An explicit theme choice. These blocks restate the page tokens as well as
+   the band tokens, because they have to beat the media query above. */
+html[data-theme="light"] {
+  --bg: #f4f8ff; --panel: #ffffff; --ink: #0f2257; --ink-2: #29406f; --muted: #55689a;
+  --line: #dbe6fa; --line-strong: #c3d5f5; --blue: #2f6bff; --blue-d: #1747d6;
+  --pale: #e8f0ff; --pale-2: #f2f7ff;
+  --green: #0a7f5a; --green-soft: #e0f6ec; --amber: #925500; --amber-soft: #fff0d6;
+  --red: #bc2c3d; --red-soft: #ffe6eb;
+  --grad: linear-gradient(135deg, #3b78ff, #1747d6);
+  --shadow-sm: 0 2px 8px rgba(15, 34, 87, .05);
+  --shadow: 0 12px 32px rgba(47, 107, 255, .10);
+  --shadow-lg: 0 26px 60px rgba(15, 34, 87, .14);
+  --band: #edf3ff; --band-2: #ffffff; --band-3: #e4edff; --band-line: #d7e3f8;
+  --band-ink: #0f2257; --band-ink-2: #29406f; --band-muted: #55689a;
+  --band-accent: #1747d6; --band-em: #2f6bff; --band-check: #0a7f5a;
+  --band-glow-1: rgba(47, 107, 255, .22); --band-glow-2: rgba(91, 168, 255, .18);
+  --band-grid: rgba(15, 34, 87, .05);
+  --band-btn-bg: rgba(255, 255, 255, .8); --band-btn-bg-h: #ffffff;
+  --band-btn-border: #c3d5f5; --band-btn-border-h: #2f6bff;
+  --band-input-bg: #ffffff; --band-frame: #dbe6fa;
+  --band-shadow: 0 30px 70px rgba(15, 34, 87, .12), 0 6px 18px rgba(15, 34, 87, .07);
+  --band-card-shadow: 0 22px 50px rgba(15, 34, 87, .12);
+  color-scheme: light;
+}
+html[data-theme="dark"] {
+  --bg: #070f2b; --panel: #101c42; --ink: #eaf1ff; --ink-2: #c6d5f7; --muted: #98ace0;
+  --line: #22346c; --line-strong: #2f4799; --blue: #74a0ff; --blue-d: #4a80ff;
+  --pale: #16244f; --pale-2: #0d1738;
+  --green: #6fdcb4; --green-soft: #12362c; --amber: #ffd18b; --amber-soft: #3b2f1f;
+  --red: #ff93a1; --red-soft: #42232c;
+  --grad: linear-gradient(135deg, #4a80ff, #2756e0);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, .3);
+  --shadow: 0 14px 34px rgba(0, 0, 0, .4);
+  --shadow-lg: 0 26px 60px rgba(0, 0, 0, .5);
+  --band: #0a1130; --band-2: #0d1738; --band-3: #16244f; --band-line: #223367;
+  --band-ink: #ffffff; --band-ink-2: #ccd9f6; --band-muted: #93a8d8;
+  --band-accent: #8fb4ff; --band-em: #7ea6ff; --band-check: #6fdcb4;
+  --band-glow-1: rgba(47, 107, 255, .42); --band-glow-2: rgba(91, 168, 255, .28);
+  --band-grid: rgba(255, 255, 255, .045);
+  --band-btn-bg: rgba(255, 255, 255, .06); --band-btn-bg-h: rgba(255, 255, 255, .12);
+  --band-btn-border: rgba(255, 255, 255, .22); --band-btn-border-h: rgba(255, 255, 255, .4);
+  --band-input-bg: rgba(255, 255, 255, .08); --band-frame: rgba(255, 255, 255, .14);
+  --band-shadow: 0 40px 90px rgba(3, 8, 24, .55), 0 8px 24px rgba(3, 8, 24, .3);
+  --band-card-shadow: 0 26px 60px rgba(10, 17, 48, .4);
+  color-scheme: dark;
+}
+
+/* --- the band: header, hero, page-hero, footer ---------------------------- */
+.hero-band {
   position: relative;
   overflow: hidden;
-  background: #0a1130;
-  color: var(--ink);
+  background: var(--band);
+  color: var(--band-ink);
+  border-bottom: 1px solid var(--band-line);
 }
-.hero-dark::before {
+.hero-band::before {
   content: "";
   position: absolute; inset: -30% -10% auto -20%; height: 720px; z-index: 0;
   background:
-    radial-gradient(45% 55% at 18% 0%, rgba(47, 107, 255, .42), transparent 68%),
-    radial-gradient(38% 48% at 82% 8%, rgba(91, 168, 255, .28), transparent 70%);
+    radial-gradient(45% 55% at 18% 0%, var(--band-glow-1), transparent 68%),
+    radial-gradient(38% 48% at 82% 8%, var(--band-glow-2), transparent 70%);
   pointer-events: none;
 }
-.hero-dark::after {
+.hero-band::after {
   content: "";
   position: absolute; inset: 0; z-index: 0; opacity: .5; pointer-events: none;
   background-image:
-    linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+    linear-gradient(var(--band-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--band-grid) 1px, transparent 1px);
   background-size: 64px 64px;
   mask-image: radial-gradient(70% 60% at 50% 30%, #000 30%, transparent 75%);
   -webkit-mask-image: radial-gradient(70% 60% at 50% 30%, #000 30%, transparent 75%);
 }
-.hero-dark .wrap { position: relative; z-index: 1; }
-.hero-dark .eyebrow { color: #8fb4ff; }
-.hero-dark .eyebrow .dot { background: #6c93ff; box-shadow: 0 0 0 4px rgba(108,147,255,.18); }
-.hero-dark .lede { color: #c3d3f2; }
-.hero-dark h1 { letter-spacing: -.045em; }
+.hero-band .wrap { position: relative; z-index: 1; }
+/* .pt-10 alone leaves the headline too close to the header */
+.hero-band.pt-10 { padding-top: clamp(44px, 5.6vw, 80px); }
+.hero-band .eyebrow { color: var(--band-accent); }
+.hero-band .eyebrow .dot { background: var(--band-em); box-shadow: 0 0 0 4px var(--band-glow-1); }
+.hero-band .lede { color: var(--band-ink-2); }
+.hero-band h1 { letter-spacing: -.045em; }
+.hero-band .hero-title em { color: var(--band-em); }
+.hero-band .btn:not(.btn-primary) {
+  background: var(--band-btn-bg); border-color: var(--band-btn-border); color: var(--band-ink);
+}
+.hero-band .btn:not(.btn-primary):hover {
+  background: var(--band-btn-bg-h); border-color: var(--band-btn-border-h); color: var(--band-ink);
+}
+.hero-band .btn.btn-ghost { background: transparent; border-color: var(--band-btn-border); }
+.hero-band .btn-primary { box-shadow: 0 12px 30px rgba(47, 107, 255, .38); }
 
 .hero-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(32px, 4vw, 64px); align-items: center; }
 @media (max-width: 920px) { .hero-split { grid-template-columns: 1fr; gap: 34px; } }
+.hero-pad { padding-bottom: clamp(48px, 6vw, 88px); }
+.hero-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
 
-.hero-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 26px; }
-.hero-dark .btn-primary { box-shadow: 0 12px 30px rgba(47, 107, 255, .42); }
-.hero-dark .btn:not(.btn-primary) { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.22); color: #fff; }
-.hero-dark .btn:not(.btn-primary):hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.4); }
-
-.trust-row { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 22px; font-size: 13px; color: #93a8d8; }
+.trust-row { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 22px; font-size: 13px; color: var(--band-muted); }
 .trust-row span { display: inline-flex; align-items: center; gap: 7px; }
-.trust-row svg { color: #6fdcb4; flex: none; }
+.trust-row svg { color: var(--band-check); flex: none; }
+
+/* --- hero quick check -----------------------------------------------------
+   The page opens on the thing the product does: drop a link in, get a reason. */
+.hero-form { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; max-width: 540px; }
+.hero-form input {
+  flex: 1 1 240px; min-width: 0;
+  padding: 13px 18px; border-radius: 100px;
+  border: 1.5px solid var(--band-btn-border);
+  background: var(--band-input-bg); color: var(--band-ink);
+  font: inherit; font-size: 15px;
+}
+.hero-form input::placeholder { color: var(--band-muted); }
+.hero-form input:focus {
+  outline: 2px solid var(--blue); outline-offset: 2px;
+  border-color: var(--blue); background: var(--band-btn-bg-h);
+}
+.hero-form .btn { flex: none; }
+.hero-note { margin: 12px 0 0; font-size: 12.5px; line-height: 1.55; color: var(--band-muted); max-width: 46ch; }
 
 /* --- browser + interface mocks -------------------------------------------- */
 .browser {
-  border-radius: 16px; overflow: hidden; background: #fff;
-  border: 1px solid rgba(255,255,255,.14);
-  box-shadow: 0 40px 90px rgba(3, 8, 24, .55), 0 8px 24px rgba(3, 8, 24, .3);
+  border-radius: 16px; overflow: hidden; background: var(--band-2);
+  border: 1px solid var(--band-frame);
+  box-shadow: var(--band-shadow);
 }
 .browser-bar {
   display: flex; align-items: center; gap: 10px;
@@ -503,7 +622,8 @@ details.faq p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
 .addr .flag { color: #bc2c3d; flex: none; display: inline-flex; }
 .browser-body { padding: 16px; background: #f7faff; }
 
-/* popup mock (mirrors src/popup) */
+/* popup mock (mirrors src/popup). The product UI is light in both themes, so
+   these panels keep fixed colours — only the frame around them changes. */
 .popup {
   width: min(100%, 322px); margin-inline: auto; border-radius: 16px; overflow: hidden;
   background: #fff; border: 1px solid #dbe6fa; box-shadow: 0 20px 44px rgba(15, 34, 87, .16);
@@ -535,6 +655,12 @@ details.faq p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
 .site-card .domain { font-weight: 800; font-size: 13px; margin-bottom: 2px; overflow-wrap: anywhere; }
 .site-card .risk { color: #bc2c3d; font-weight: 800; font-size: 11px; }
 .site-card .basis { color: #55689a; font-size: 10.5px; margin-top: 3px; line-height: 1.4; }
+.site-card[data-tone="warn"] { border-color: #e9b866; }
+.site-card[data-tone="warn"] .symbol { background: #ffeccb; color: #925500; }
+.site-card[data-tone="warn"] .risk { color: #925500; }
+.site-card[data-tone="good"] { border-color: #6fcaa4; }
+.site-card[data-tone="good"] .symbol { background: #ddf5e9; color: #087a50; }
+.site-card[data-tone="good"] .risk { color: #0a7f5a; }
 .counters { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid #dbe6fa; border-radius: 12px; overflow: hidden; }
 .counters div { padding: 8px 4px 7px; text-align: center; border-right: 1px solid #dbe6fa; }
 .counters div:last-child { border-right: 0; }
@@ -561,7 +687,8 @@ details.faq p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
   background: #ffe5ea; color: #b42332; font-size: 21px; font-weight: 800; margin-bottom: 10px;
 }
 .warn-mock .tagline { font-size: 9.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #b42332; }
-.warn-mock h4 { font-size: 15.5px; margin: 4px 0 8px; letter-spacing: -.02em; }
+/* styled text, not a document heading */
+.warn-mock .warn-title { font-size: 15.5px; font-weight: 800; margin: 4px 0 8px; letter-spacing: -.02em; line-height: 1.25; }
 .warn-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 0; }
 .warn-facts div { padding: 7px 9px; border-radius: 10px; background: #eef4ff; border: 1px solid #dbe6fa; }
 .warn-facts span { display: block; font-size: 8px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: #55689a; }
@@ -586,6 +713,10 @@ details.faq p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
 .dash-bar .track { height: 7px; border-radius: 100px; background: #e8f0ff; overflow: hidden; }
 .dash-bar .track i { display: block; height: 100%; border-radius: 100px; background: #2f6bff; }
 .dash-bar b { text-align: right; font-size: 9.5px; color: #0f2257; }
+.dash-bar .track i.w-100 { width: 100%; }
+.dash-bar .track i.w-70 { width: 70%; background: #5ba8ff; }
+.dash-bar .track i.w-6 { width: 6%; background: #f0a53a; }
+.dash-bar .track i.w-3 { width: 3%; background: #e0586a; }
 
 /* --- feature rows ---------------------------------------------------------- */
 .feature-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(30px, 4vw, 64px); align-items: center; }
@@ -601,9 +732,7 @@ details.faq p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
 .feature-list li { display: flex; gap: 10px; align-items: flex-start; font-size: 14.5px; color: var(--ink-2); }
 .feature-list svg { flex: none; margin-top: 3px; color: var(--blue); }
 .feature-art { position: relative; }
-.feature-art .browser { box-shadow: 0 24px 60px rgba(15, 34, 87, .16); border-color: var(--line); }
-.feature-art .browser-bar { background: #eaf0fb; }
-.feature-art .browser-body { background: #f2f7ff; }
+.feature-art .browser { box-shadow: var(--band-card-shadow); }
 
 /* --- tools strip ----------------------------------------------------------- */
 .tool-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
@@ -629,112 +758,88 @@ details.faq p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
 .install-step span { font-size: 13.5px; color: var(--muted); line-height: 1.55; }
 .install-step code { font-family: var(--mono); font-size: 12.5px; background: var(--pale); padding: 1px 5px; border-radius: 5px; color: var(--blue-d); }
 
-/* layout helpers for the product mocks (kept style-attribute free for the CSP) */
-.hero-pad { padding-bottom: clamp(48px, 6vw, 88px); }
-.site-card[data-tone="warn"] { border-color: #e9b866; }
-.site-card[data-tone="warn"] .symbol { background: #ffeccb; color: #925500; }
-.site-card[data-tone="warn"] .risk { color: #925500; }
-.dash-bar .track i.w-100 { width: 100%; }
-.dash-bar .track i.w-70 { width: 70%; background: #5ba8ff; }
-.dash-bar .track i.w-6 { width: 6%; background: #f0a53a; }
-.dash-bar .track i.w-3 { width: 3%; background: #e0586a; }
+/* --- header and footer on the band ----------------------------------------
+   One frame around every page: the header and footer take their surfaces from
+   the same tokens as the hero, so light and dark both stay consistent. */
+.site-header {
+  --ink: var(--band-ink); --ink-2: var(--band-ink-2); --muted: var(--band-muted);
+  --line: var(--band-line); --line-strong: var(--band-btn-border);
+  --pale: var(--band-3); --panel: var(--band-2);
+  background: var(--band); /* fallback for browsers without color-mix() */
+  background: color-mix(in srgb, var(--band) 92%, transparent);
+  border-bottom: 1px solid var(--band-line);
+}
+.site-header .logo { color: var(--band-ink); }
+.site-header .logo small { color: var(--band-muted); }
+.site-header .nav a[aria-current="page"] { color: var(--band-accent); background: var(--band-3); }
+.site-header .nav a:hover { background: var(--band-3); color: var(--band-ink); }
+.site-header .nav-cta { color: #fff !important; box-shadow: 0 8px 22px rgba(47, 107, 255, .38); }
+@media (max-width: 860px) {
+  .site-header .nav { box-shadow: 0 24px 40px rgba(3, 8, 24, .18); border-bottom-color: var(--band-line); }
+}
 
-/* safe-state site card used by the extension page mock */
-.site-card[data-tone="good"] { border-color: #6fcaa4; }
-.site-card[data-tone="good"] .symbol { background: #ddf5e9; color: #087a50; }
-.site-card[data-tone="good"] .risk { color: #0a7f5a; }
+.site-footer {
+  --panel: var(--band); --line: var(--band-line);
+  --ink: var(--band-ink); --ink-2: var(--band-ink-2); --muted: var(--band-muted);
+  background: var(--band);
+  border-top: 1px solid var(--band-line);
+  margin-top: 0;
+}
+.site-footer .logo { color: var(--band-ink); }
+.site-footer li a:hover { color: var(--band-accent); }
+
+/* --- theme switch ---------------------------------------------------------- */
+.theme-toggle {
+  display: grid; place-items: center; width: 40px; height: 40px; flex: none;
+  border-radius: 100px; border: 1.5px solid var(--band-btn-border);
+  background: var(--band-btn-bg); color: var(--band-ink);
+  cursor: pointer; transition: background-color .15s, border-color .15s;
+}
+.theme-toggle:hover { background: var(--band-btn-bg-h); border-color: var(--band-btn-border-h); }
+.theme-toggle svg { display: block; }
+.theme-toggle .icon-sun { display: none; }
+html[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+html[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+@media (min-width: 861px) {
+  .theme-toggle { margin-left: auto; }
+  .site-header .nav { margin-left: 10px; }
+}
+@media (max-width: 860px) {
+  .theme-toggle { margin-left: auto; }
+  .site-header .nav-toggle { margin-left: 8px; }
+}
 
 /* --- dark page hero card used by the inner pages --------------------------- */
 .page-head.page-hero {
-  --ink: #ffffff; --ink-2: #ccd9f6; --muted: #93a8d8; --line: #223367;
+  --ink: var(--band-ink); --ink-2: var(--band-ink-2); --muted: var(--band-muted);
   position: relative; isolation: isolate; overflow: hidden;
   margin-top: clamp(18px, 3vw, 30px);
   padding: clamp(28px, 4vw, 46px) clamp(22px, 4vw, 46px) clamp(30px, 4.4vw, 50px);
   border-radius: 24px;
-  background: #0a1130;
-  color: #fff;
-  box-shadow: 0 26px 60px rgba(10, 17, 48, .28);
+  border: 1px solid var(--band-line);
+  background: var(--band);
+  color: var(--band-ink);
+  box-shadow: var(--band-card-shadow);
 }
 .page-head.page-hero::before {
   content: ""; position: absolute; inset: -40% -20% auto -30%; height: 460px; z-index: -1;
   background:
-    radial-gradient(45% 55% at 16% 0%, rgba(47, 107, 255, .5), transparent 68%),
-    radial-gradient(34% 46% at 86% 6%, rgba(91, 168, 255, .3), transparent 70%);
+    radial-gradient(45% 55% at 16% 0%, var(--band-glow-1), transparent 68%),
+    radial-gradient(34% 46% at 86% 6%, var(--band-glow-2), transparent 70%);
 }
 .page-head.page-hero::after {
   content: ""; position: absolute; inset: 0; z-index: -1; opacity: .45;
   background-image:
-    linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+    linear-gradient(var(--band-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--band-grid) 1px, transparent 1px);
   background-size: 56px 56px;
   mask-image: radial-gradient(80% 70% at 30% 0%, #000 20%, transparent 78%);
   -webkit-mask-image: radial-gradient(80% 70% at 30% 0%, #000 20%, transparent 78%);
 }
-.page-head.page-hero h1 { color: #fff; font-size: clamp(28px, 3.8vw, 42px); letter-spacing: -.04em; max-width: 20ch; }
-.page-head.page-hero p { color: #c3d3f2; max-width: 58ch; }
-.page-head.page-hero .crumbs { color: #93a8d8; }
-.page-head.page-hero .crumbs a { color: #b9cbf0; }
-.page-head.page-hero .crumbs a:hover { color: #fff; }
-.page-head.page-hero .eyebrow { color: #8fb4ff; }
-.page-head.page-hero .eyebrow .dot { background: #6c93ff; box-shadow: 0 0 0 4px rgba(108,147,255,.18); }
-
-/* heading inside the warning mock: styled text, not a document heading */
-.warn-mock .warn-title { font-size: 15.5px; font-weight: 800; margin: 4px 0 8px; letter-spacing: -.02em; line-height: 1.25; }
-/* the accent word in the dark hero needs a lighter blue to hold contrast */
-.hero-dark .hero-title em { color: #7ea6ff; }
-
-/* --- dark site header -----------------------------------------------------
-   The header sits above every page, and every page now opens on a dark navy
-   band, so it is dark too: one frame, no light strip cutting the hero in half. */
-.site-header {
-  --ink: #ffffff;
-  --ink-2: #d3e0f8;
-  --muted: #93a8d8;
-  --line: #22315e;
-  --line-strong: #2f4799;
-  --pale: #16244f;
-  --panel: #0d1738;
-  background: #0a1130;
-  border-bottom: 1px solid rgba(255, 255, 255, .1);
-}
-.site-header .nav a[aria-current="page"] { color: #8fb4ff; background: #16244f; }
-.site-header .nav a:hover { background: #16244f; color: #fff; }
-.site-header .logo { color: #fff; }
-.site-header .logo small { color: #93a8d8; }
-.site-header .nav-cta { color: #fff !important; box-shadow: 0 8px 22px rgba(47, 107, 255, .45); }
-@media (max-width: 860px) {
-  .site-header .nav { box-shadow: 0 24px 40px rgba(3, 8, 24, .45); border-bottom-color: #22315e; }
-}
-
-/* hero breathing room: .pt-10 alone leaves the headline too close to the header */
-.hero-dark.pt-10 { padding-top: clamp(44px, 5.6vw, 80px); }
-
-/* dark footer closes the frame opened by the header */
-.site-footer {
-  --panel: #0a1130; --line: #1d2b55;
-  --ink: #ffffff; --ink-2: #c3d3f2; --muted: #93a8d8;
-  background: #0a1130;
-  margin-top: 0;
-}
-.site-footer li a:hover { color: #8fb4ff; }
-.site-footer .logo { color: #fff; }
-
-/* --- hero quick check ------------------------------------------------------
-   The page opens on the thing the product does: drop a link in, get a reason. */
-.hero-form { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; max-width: 540px; }
-.hero-form input {
-  flex: 1 1 240px; min-width: 0;
-  padding: 13px 18px; border-radius: 100px;
-  border: 1.5px solid rgba(255, 255, 255, .22);
-  background: rgba(255, 255, 255, .08); color: #fff;
-  font: inherit; font-size: 15px;
-}
-.hero-form input::placeholder { color: #93a8d8; }
-.hero-form input:focus {
-  outline: 2px solid #6c93ff; outline-offset: 2px;
-  border-color: #6c93ff; background: rgba(255, 255, 255, .13);
-}
-.hero-form .btn { flex: none; }
-.hero-note { margin: 12px 0 0; font-size: 12.5px; line-height: 1.55; color: #8fa6d4; max-width: 46ch; }
-.hero-actions { margin-top: 18px; }
-.hero-dark .btn-ghost { background: transparent; border-color: rgba(255, 255, 255, .18); }
+.page-head.page-hero h1 { color: var(--band-ink); font-size: clamp(28px, 3.8vw, 42px); letter-spacing: -.04em; max-width: 20ch; }
+.page-head.page-hero p { color: var(--band-ink-2); max-width: 58ch; }
+.page-head.page-hero .crumbs { color: var(--band-muted); }
+.page-head.page-hero .crumbs a { color: var(--band-ink-2); }
+.page-head.page-hero .crumbs a:hover { color: var(--band-accent); }
+.page-head.page-hero .eyebrow { color: var(--band-accent); }
+.page-head.page-hero .eyebrow .dot { background: var(--band-em); box-shadow: 0 0 0 4px var(--band-glow-1); }

@@ -82,6 +82,12 @@ for (const file of htmlFiles) {
   if (/<script(?![^>]*\bsrc=)[^>]*>[\s\S]*?\S[\s\S]*?<\/script>/.test(html)) problems.push(`${page}: inline <script> would be blocked by the CSP — move it to a module file`);
   if (/<style[\s>]/.test(html)) problems.push(`${page}: inline <style> block would be blocked by the CSP`);
   if (/\sstyle="/.test(html)) problems.push(`${page}: style attribute would be blocked by the CSP — use a utility class`);
+
+  // 3c. the theme switch has to be on every page, and the script that applies the
+  // saved palette has to be in the head so the first paint is the right theme.
+  if (!/<script src="(?:\.\.\/)*assets\/js\/theme\.js"><\/script>/.test(html)) problems.push(`${page}: missing the theme.js script in <head>`);
+  if (!/data-theme-toggle/.test(html)) problems.push(`${page}: missing the theme switch button`);
+  if (!/<meta name="theme-color" content="[^"]*" media="\(prefers-color-scheme: (?:light|dark)\)">/.test(html)) problems.push(`${page}: theme-color should declare a light and a dark value`);
 }
 
 // 4. generated engine copies must match the extension source

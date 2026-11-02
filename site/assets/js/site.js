@@ -1,4 +1,5 @@
-// Shared site behaviour: mobile navigation, current year, clipboard helper.
+// Shared site behaviour: mobile navigation, theme switch, current year,
+// clipboard helper.
 
 const nav = document.querySelector('.nav');
 const toggle = document.querySelector('.nav-toggle');
@@ -19,6 +20,25 @@ if (nav && toggle) {
 }
 
 for (const node of document.querySelectorAll('[data-year]')) node.textContent = String(new Date().getFullYear());
+
+// Theme switch. The palette itself is applied in <head> by theme.js; this only
+// flips it and keeps the button's pressed state in step.
+const themeButton = document.querySelector('[data-theme-toggle]');
+if (themeButton && window.bgTheme) {
+  const syncThemeButton = () => {
+    const dark = window.bgTheme.current() === 'dark';
+    const next = dark ? 'light' : 'dark';
+    themeButton.setAttribute('aria-pressed', String(dark));
+    themeButton.setAttribute('title', `Switch to ${next} theme`);
+    // aria-label wins over title for screen readers, so both have to move.
+    themeButton.setAttribute('aria-label', `Switch to ${next} theme`);
+  };
+  syncThemeButton();
+  themeButton.addEventListener('click', () => {
+    window.bgTheme.set(window.bgTheme.current() === 'dark' ? 'light' : 'dark');
+    syncThemeButton();
+  });
+}
 
 export async function copyText(text, button) {
   try {

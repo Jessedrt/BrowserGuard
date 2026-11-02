@@ -7,7 +7,7 @@ runs in the visitor's browser.
 site/
   index.html                     tools hub and quick link check
   extension.html                 the Chromium extension as one offering
-  about.html                     method, privacy statement and limits (#limits)
+  about.html                     project, scoring method, privacy statement
   tools/
     link-checker.html            URL and email-link phishing analysis
     password-strength.html       guess-count and pattern analysis
@@ -16,9 +16,10 @@ site/
   robots.txt
   _headers                       security headers for static hosts (Netlify et al.)
   assets/
-    css/site.css                 one design system, light and dark
+    css/site.css                 one design system; light and dark themes
     img/                         logo, favicon, Open Graph image
-    js/site.js                   navigation, year, clipboard helper
+    js/theme.js                  applies the saved theme before first paint
+    js/site.js                   navigation, theme switch, date, clipboard helper
     js/lib/password.js           scoring, generation, 256-word list
     js/tools/*.js                one module per tool page
     js/engine/                   GENERATED from src/security — do not edit

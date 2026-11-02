@@ -3,18 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>About, method and limits — BrowserGuard</title>
-<meta name="description" content="How BrowserGuard's tools work, what data they do and do not handle, and the limits of local analysis. A SIWES mini project by Ayomide Jesse, 2026.">
+<title>About the project and method — BrowserGuard</title>
+<meta name="description" content="How BrowserGuard works: the scoring method behind the link checker, the privacy model, and the project behind it. A SIWES mini project by Ayomide Jesse, 2026.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="About, method and limits — BrowserGuard">
-<meta property="og:description" content="How BrowserGuard's tools work, what data they do and do not handle, and the limits of local analysis. A SIWES mini project by Ayomide Jesse, 2026.">
+<meta property="og:title" content="About the project and method — BrowserGuard">
+<meta property="og:description" content="How BrowserGuard works: the scoring method behind the link checker, the privacy model, and the project behind it. A SIWES mini project by Ayomide Jesse, 2026.">
 <meta property="og:url" content="https://broswerguard.netlify.app/about">
 <meta property="og:image" content="https://broswerguard.netlify.app/assets/img/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://unique-fox-c13dba.netlify.app/assets/img/og.jpg">
-<meta name="theme-color" content="#0a1130">
+<meta name="theme-color" content="#edf3ff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a1130" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/css/site.css">
+<script src="assets/js/theme.js"></script>
 <link rel="canonical" href="https://broswerguard.netlify.app/about">
 </head>
 <body>
@@ -28,6 +30,10 @@
       </span>
       <span>BrowserGuard<small>Security tools</small></span>
     </a>
+    <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false" aria-label="Dark theme">
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11Z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>
+    </button>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
@@ -44,8 +50,8 @@
   <div class="wrap">
     <div class="page-head page-hero">
       <div class="crumbs"><a href="./">Home</a> <span aria-hidden="true">/</span> <span>About</span></div>
-      <h1>About, method and limits</h1>
-      <p>BrowserGuard is a SIWES mini project: a set of practical security tools, plus the Chromium extension they share code with. This page explains how the tools work and what they cannot tell you.</p>
+      <h1>About the project</h1>
+      <p>BrowserGuard is a SIWES mini project: a set of practical security tools, plus the Chromium extension they share code with. This page explains how the tools work.</p>
     </div>
 
     <div class="tool-shell-wide tool-shell">
@@ -69,31 +75,7 @@
             <div class="fact"><span>20 points</span><strong>Long domain, odd encoding, HTTP login page</strong></div>
             <div class="fact"><span>15–10 points</span><strong>Link shortener, unusually complex path</strong></div>
           </div>
-          <p class="mt-16">The bands are: <strong>0</strong> no indicators, <strong>1–29</strong> low risk, <strong>30–59</strong> suspicious, <strong>60+</strong> high risk. The score is a weighted tally, not a probability — “40/99” does not mean a 40% chance that a site is fraudulent.</p>
-        </section>
-
-        <section class="panel" id="limits">
-          <div class="panel-title"><h2>What these tools cannot do</h2></div>
-          <details class="faq" open>
-            <summary>They cannot prove a site is safe</summary>
-            <p>A clean result means no configured structural signal matched. Phishing pages on ordinary-looking domains pass these checks, which is why the wording is “no known indicators”, never “safe”.</p>
-          </details>
-          <details class="faq">
-            <summary>They do not open or contact the link</summary>
-            <p>There is no server component, so nothing is fetched, no DNS lookup is performed, and no certificate is inspected. A page cannot be judged by its content here.</p>
-          </details>
-          <details class="faq">
-            <summary>The password score is a model, not a measurement</summary>
-            <p>It estimates the guesses an attacker would need, penalising known passwords and predictable patterns. It cannot know whether a specific password has been reused elsewhere, and it does not know a target site's actual rate limiting.</p>
-          </details>
-          <details class="faq">
-            <summary>The privacy check reports what this browser exposes</summary>
-            <p>It is a demonstration of available signals, not a complete fingerprinting test and not a score you can “pass”. Blocking more signals can make a browser rarer and therefore easier to single out.</p>
-          </details>
-          <details class="faq">
-            <summary>None of this replaces antivirus or professional advice</summary>
-            <p>Browser-level checks cover what a browser can see. They do not scan a device, detect installed malware, or respond to an active incident.</p>
-          </details>
+          <p class="mt-16">The bands are: <strong>0</strong> no indicators, <strong>1–29</strong> low risk, <strong>30–59</strong> suspicious, <strong>60+</strong> high risk.</p>
         </section>
 
         <section class="panel">
@@ -102,7 +84,7 @@
             <li><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>No accounts, cookies, analytics or third-party fonts.</span></li>
             <li><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Link and password checks are processed in the page and never transmitted.</span></li>
             <li><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>The one optional network request — the breach check — uses k-anonymity: a five-character SHA-1 prefix and nothing else.</span></li>
-            <li><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Nothing is written to local storage or the URL, apart from a link you paste into the checker yourself.</span></li>
+            <li><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Nothing is stored, apart from your theme choice and a link you paste into the checker yourself.</span></li>
           </ul>
         </section>
       </div>
