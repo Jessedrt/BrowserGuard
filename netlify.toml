@@ -28,13 +28,34 @@
     Permissions-Policy = "geolocation=(), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()"
     Cross-Origin-Opener-Policy = "same-origin"
 
-# Assets are content-stable: long cache, but revalidated on change of filename.
+# Cache policy.
+#
+# Filenames here never change (no build step, no content hashes), so a long
+# max-age would pin an old stylesheet in a returning visitor's browser for
+# days — which is exactly what happened when the redesign shipped. Anything
+# that can change must revalidate; Netlify then answers with a cheap 304 when
+# the file is unchanged, and the new bytes when it is.
 [[headers]]
-  for = "/assets/*"
+  for = "/assets/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/assets/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Images and icons are the one thing that can be cached hard: they are replaced
+# by a new filename, not edited in place.
+[[headers]]
+  for = "/assets/img/*"
   [headers.values]
     Cache-Control = "public, max-age=604800"
 
+# HTML: always revalidate. This covers "/" and the extensionless URLs too —
+# a rule for "/*.html" alone missed them, because Netlify serves /about from
+# about.html without the .html ever appearing in the request URL.
 [[headers]]
-  for = "/*.html"
+  for = "/*"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"

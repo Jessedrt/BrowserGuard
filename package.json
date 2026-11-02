@@ -11,6 +11,7 @@
     "site:check": "node scripts/check-site.mjs",
     "site:serve": "python3 -m http.server 8099 --directory site",
     "site:zip": "node scripts/build-site-zip.mjs",
-    "site:url": "node scripts/set-site-url.mjs"
+    "site:url": "node scripts/set-site-url.mjs",
+    "site:v": "node scripts/bump-site-assets.mjs"
   }
 }
