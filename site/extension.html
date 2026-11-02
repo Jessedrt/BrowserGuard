@@ -45,38 +45,38 @@
       <p>The tools on this site are manual: you paste, you check. The extension applies the same analysis to every page you open, and blocks ad and tracker requests before they reach the network.</p>
     </div>
 
-    <section class="section" style="padding-top:10px">
-      <img src="assets/img/hero-extension.webp" width="1200" height="675" alt="A browser window protected by the BrowserGuard shield" style="border-radius:28px; border:1px solid var(--line); box-shadow:var(--shadow-lg)">
+    <section class="pt-10 section">
+      <img src="assets/img/hero-extension.webp" width="1200" height="675" alt="A browser window protected by the BrowserGuard shield" class="hero-img">
     </section>
 
-    <section class="section" style="padding-top:0">
+    <section class="pb-0 section">
       <div class="section-head">
         <h2>What it does</h2>
         <p>Four behaviours, each with a clear limit stated next to it.</p>
       </div>
       <div class="tool-grid">
-        <article class="tool-card" style="cursor:default">
+        <article class="cursor-default tool-card">
           <span class="tool-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 19 5.7v5.7c0 4.2-3 7.3-7 8.6-4-1.3-7-4.4-7-8.6V5.7L12 3Z"/><path d="m9 11.8 2.2 2.3 4.1-4.2"/></svg>
           </span>
           <h3>URL warnings</h3>
           <p>Top-level navigation is analysed before the page settles. A risky address is replaced with a warning that names the specific reasons and offers a one-time way past.</p>
         </article>
-        <article class="tool-card" style="cursor:default">
+        <article class="cursor-default tool-card">
           <span class="tool-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M6.2 17.8 17.8 6.2"/></svg>
           </span>
           <h3>Ad and tracker blocking</h3>
           <p>Packaged <span class="mono">declarativeNetRequest</span> rulesets block known ad and tracker requests. Each can be switched off independently, and an allowlist exempts sites you trust.</p>
         </article>
-        <article class="tool-card" style="cursor:default">
+        <article class="cursor-default tool-card">
           <span class="tool-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h7"/><circle cx="18" cy="16" r="3.2"/></svg>
           </span>
           <h3>Malware feed matching</h3>
           <p>Domains are compared against the public URLhaus malware list, stored locally and updated daily. The list is downloaded — your browsing URLs never are.</p>
         </article>
-        <article class="tool-card" style="cursor:default">
+        <article class="cursor-default tool-card">
           <span class="tool-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v9"/><path d="m8 9 4 4 4-4"/><path d="M5 17v2h14v-2"/></svg>
           </span>
@@ -85,7 +85,7 @@
         </article>
       </div>
 
-      <p style="margin-top:24px"><a class="btn btn-primary" href="tools/link-checker.html">Try the analysis yourself</a></p>
+      <p class="mt-24"><a class="btn btn-primary" href="tools/link-checker.html">Try the analysis yourself</a></p>
     </section>
 
     <section class="section band">
@@ -93,15 +93,15 @@
         <div class="split">
           <div>
             <span class="eyebrow"><span class="dot"></span>Install</span>
-            <h2 style="font-size:clamp(26px,3.4vw,34px)">Loading it in Chrome, Edge or Brave</h2>
-            <ol style="margin:18px 0 0; padding-left:20px; color:var(--ink-2); line-height:1.9">
+            <h2 class="h2-sm">Loading it in Chrome, Edge or Brave</h2>
+            <ol class="steps-list">
               <li>Download the latest ZIP from the GitHub releases page and extract it.</li>
               <li>Open <span class="mono">chrome://extensions</span> (or <span class="mono">edge://extensions</span>).</li>
               <li>Turn on <strong>Developer mode</strong>, then choose <strong>Load unpacked</strong>.</li>
               <li>Select the folder that contains <span class="mono">manifest.json</span>.</li>
               <li>Pin BrowserGuard, open the popup, and use <strong>Update now</strong> in the dashboard to fetch the threat feed.</li>
             </ol>
-            <p style="margin-top:20px"><a class="btn" href="https://github.com/Jessedrt/BrowserGuard/releases/latest" rel="noopener">Latest release on GitHub</a></p>
+            <p class="mt-20"><a class="btn" href="https://github.com/Jessedrt/BrowserGuard/releases/latest" rel="noopener">Latest release on GitHub</a></p>
           </div>
           <div>
             <img src="assets/img/overview.webp" width="800" height="800" alt="Browser, shield and padlock illustration" loading="lazy">
@@ -160,7 +160,7 @@
   <div class="wrap">
     <div class="footer-grid">
       <div>
-        <a class="logo" href="index.html" style="margin-bottom:14px">
+        <a class="mb-14 logo" href="index.html">
           <span class="logo-mark" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 19 5.7v5.7c0 4.2-3 7.3-7 8.6-4-1.3-7-4.4-7-8.6V5.7L12 3Z"/><path d="m9 11.8 2.2 2.3 4.1-4.2"/></svg>
           </span>

@@ -105,7 +105,10 @@ The site's URL engine is generated from `src/security/` by `npm run site:sync`, 
 `npm run site:check` fails if the copy drifts, so a fix in one place applies to the
 extension and the website together. Serve it with `npm run site:serve`
 (`http://localhost:8099`); the tools are ES modules and need HTTP rather than
-`file://`. Deployment notes are in `site/README.md`.
+`file://`. `netlify.toml` and `site/_headers` apply a strict Content-Security-Policy (no
+inline scripts or styles) and the usual protective headers; `npm run site:zip`
+builds an upload archive for drag-and-drop hosts. Deployment notes are in
+`site/README.md`.
 
 ## Architecture
 

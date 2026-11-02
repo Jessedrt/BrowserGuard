@@ -9,6 +9,7 @@
     "icons": "node scripts/make-icons.mjs",
     "site:sync": "node scripts/sync-site-engine.mjs",
     "site:check": "node scripts/check-site.mjs",
-    "site:serve": "python3 -m http.server 8099 --directory site"
+    "site:serve": "python3 -m http.server 8099 --directory site",
+    "site:zip": "node scripts/build-site-zip.mjs"
   }
 }

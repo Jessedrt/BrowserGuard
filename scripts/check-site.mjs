@@ -60,6 +60,12 @@ for (const file of htmlFiles) {
   if (!/<title>[^<]{10,}<\/title>/.test(html)) problems.push(`${page}: missing or too-short <title>`);
   if (!/<meta name="description" content="[^"]{40,}"/.test(html)) problems.push(`${page}: missing meta description`);
   if (!/<html lang="/.test(html)) problems.push(`${page}: missing lang attribute`);
+
+  // 3b. the CSP in netlify.toml / _headers has no 'unsafe-inline', so any inline
+  // script, <style> block or style attribute would be blocked at runtime.
+  if (/<script(?![^>]*\bsrc=)[^>]*>[\s\S]*?\S[\s\S]*?<\/script>/.test(html)) problems.push(`${page}: inline <script> would be blocked by the CSP — move it to a module file`);
+  if (/<style[\s>]/.test(html)) problems.push(`${page}: inline <style> block would be blocked by the CSP`);
+  if (/\sstyle="/.test(html)) problems.push(`${page}: style attribute would be blocked by the CSP — use a utility class`);
 }
 
 // 4. generated engine copies must match the extension source

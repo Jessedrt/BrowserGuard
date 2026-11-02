@@ -1,0 +1,3 @@
+# BrowserGuard security tools
+User-agent: *
+Allow: /

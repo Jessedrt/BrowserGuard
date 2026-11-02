@@ -1,0 +1,41 @@
+# Netlify configuration for the BrowserGuard security-tools site.
+#
+# The site is plain HTML, CSS and ES modules with no build step, so Netlify just
+# publishes the folder. If you deploy by drag-and-drop (app.netlify.com/drop),
+# this file is ignored — the headers below then need to be added in the Netlify
+# UI under Site configuration → Headers. Deploying from this repository applies
+# them automatically.
+
+[build]
+  publish = "site"
+  command = ""
+
+# Single-page-friendly 404 that still returns a real 404 status.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 404
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # No inline scripts or inline styles anywhere in the site, so the policy needs
+    # no 'unsafe-inline'. connect-src allows only the optional k-anonymity breach
+    # check; everything else is same-origin.
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://api.pwnedpasswords.com; form-action 'self'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "no-referrer"
+    Permissions-Policy = "geolocation=(), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()"
+    Cross-Origin-Opener-Policy = "same-origin"
+
+# Assets are content-stable: long cache, but revalidated on change of filename.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

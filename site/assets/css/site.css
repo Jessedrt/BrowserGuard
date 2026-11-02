@@ -400,3 +400,27 @@ details.faq p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* ---------------- utilities ----------------
+   Small, named helpers so pages carry no inline styles: the site ships a strict
+   Content-Security-Policy with no 'unsafe-inline' for styles or scripts. */
+.mt-0 { margin-top: 0; }
+.mt-12 { margin-top: 12px; }
+.mt-14 { margin-top: 14px; }
+.mt-16 { margin-top: 16px; }
+.mt-18 { margin-top: 18px; }
+.mt-20 { margin-top: 20px; }
+.mt-22 { margin-top: 22px; }
+.mt-24 { margin-top: 24px; }
+.mt-tight { margin-top: -6px; }
+.mb-14 { margin-bottom: 14px; }
+.pb-0 { padding-bottom: 0; }
+.pt-10 { padding-top: 10px; }
+.cursor-default { cursor: default; }
+.h2-md { font-size: clamp(26px, 3.4vw, 36px); }
+.h2-sm { font-size: clamp(26px, 3.4vw, 34px); }
+.body-md { font-size: 16.5px; }
+.hero-img { border-radius: 28px; border: 1px solid var(--line); box-shadow: var(--shadow-lg); }
+.steps-list { margin: 18px 0 0; padding-left: 20px; color: var(--ink-2); line-height: 1.9; }
+.tool-shell-wide { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+.panel-inline { padding: 20px; margin-top: 14px; }

@@ -13,6 +13,8 @@ site/
     password-strength.html       guess-count and pattern analysis
     password-generator.html      random passwords and passphrases
     privacy-check.html           what this browser exposes to any site
+  robots.txt
+  _headers                       security headers for static hosts (Netlify et al.)
   assets/
     css/site.css                 one design system, light and dark
     img/                         logo, favicon, hero, Open Graph image
@@ -26,8 +28,9 @@ site/
 
 ```bash
 npm run site:serve     # http://localhost:8099
-npm run site:check     # links, accessibility basics, engine drift, external hosts
+npm run site:check     # links, accessibility basics, CSP safety, engine drift
 npm run site:sync      # refresh assets/js/engine from src/security
+npm run site:zip       # build deploy/browserguard-site.zip for drag-and-drop hosts
 ```
 
 The site must be served over HTTP rather than opened from the file system, because
@@ -45,15 +48,56 @@ and run `npm run site:sync`.
 
 ## Deploying
 
-The folder can be published as-is (GitHub Pages, Netlify, Cloudflare Pages, an
-S3 bucket, or any static host). Before going live:
+The folder can be published as-is (Netlify, Cloudflare Pages, GitHub Pages, an S3
+bucket, or any static host). There is no build command and no output directory
+other than `site/` itself.
 
-1. Set the absolute URLs for `og:image` and add `og:url` per page — they are
-   currently relative, which works for browsing but not for social previews.
-2. Add the production domain to `robots.txt` and `sitemap.xml` if you want search
-   engines to index the tools.
-3. If the site is served under a sub-path, every link is relative, so it will work
-   unchanged, but check `tools/*.html` links from the hub once after deploying.
+### Netlify
+
+Two routes, both free:
+
+**Drag and drop (fastest, no repository connection).** Build the upload archive and
+drop it on <https://app.netlify.com/drop>:
+
+```bash
+npm run site:zip     # writes deploy/browserguard-site.zip (~218 KB, 26 files)
+```
+
+Netlify extracts it, serves `index.html`, and gives you a `*.netlify.app` URL. The
+`_headers` file inside the archive is read automatically, so the security headers
+and CSP apply on a drag-and-drop deploy too.
+
+**Repository import (recommended for updates).** Connect the GitHub repo, then:
+
+| Setting | Value |
+| --- | --- |
+| Build command | *(leave empty)* |
+| Publish directory | `site` |
+| Node version | any — nothing is compiled |
+
+`netlify.toml` at the repository root supplies those values, so the defaults are
+already correct. Every push to the production branch redeploys automatically.
+
+### Headers and CSP
+
+Both `netlify.toml` and `site/_headers` send:
+
+- a Content-Security-Policy with no `unsafe-inline` for scripts *or* styles — the
+  site has no inline scripts and no `style=` attributes, and `npm run site:check`
+  fails if one is ever reintroduced
+- `connect-src` limited to `'self'` plus `https://api.pwnedpasswords.com` for the
+  optional breach check
+- `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
+  `Referrer-Policy: no-referrer`, `Permissions-Policy` denying device APIs
+
+### Before going live
+
+1. Set absolute `og:image` and `og:url` values once you know the domain — social
+   previews do not resolve relative paths.
+2. Add a `sitemap.xml` with absolute URLs if you want search engines to index the
+   tools, and reference it from `robots.txt`.
+3. Check the site on a phone; every link is relative, so a sub-path deployment
+   works unchanged.
 
 ## Network use
 
