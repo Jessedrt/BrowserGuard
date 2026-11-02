@@ -180,35 +180,6 @@
 
     <section class="section">
       <div class="wrap">
-        <div class="section-head">
-          <h2>What it deliberately does not do</h2>
-          <p>Stating limits is part of the design, not a disclaimer bolted on. These are the honest boundaries of a browser-level tool.</p>
-        </div>
-        <details class="faq" open>
-          <summary>It is not antivirus software</summary>
-          <p>It does not scan your computer, your files or installed programs, and it will not find malware already on a device. It protects what the browser can see: top-level addresses, subresource requests and the domains they point to.</p>
-        </details>
-        <details class="faq">
-          <summary>A clean verdict is not a safety guarantee</summary>
-          <p>The URL analysis looks for structural deception — lookalike brands, IP hosts, encoded tricks, suspicious paths. A phishing page on a professionally chosen domain can pass every check. “No indicators” means exactly that.</p>
-        </details>
-        <details class="faq">
-          <summary>The feed has a size limit imposed by the browser</summary>
-          <p>Chrome caps how many dynamic rules an extension may hold (5,000 below version 121, 30,000 from version 121 for block/allow rules). The extension applies as much of the downloaded feed as that budget allows and tells you the enforced count in Settings. The link checker and navigation analysis still read the full stored list.</p>
-        </details>
-        <details class="faq">
-          <summary>Blocked-request counters need an unpacked install</summary>
-          <p>Ad and tracker counts come from Chrome's <span class="mono">onRuleMatchedDebug</span> feedback event, which the browser only provides to unpacked extensions. In a packed install the blocking still works, but those counters cannot be populated. The extension counts what it observed instead of estimating.</p>
-        </details>
-        <details class="faq">
-          <summary>YouTube ad handling is best effort</summary>
-          <p>On YouTube, the extension hides known page ad slots and presses an available Skip button. An optional setting attempts a guarded seek only when YouTube's own ad state and countdown agree with the video timeline. YouTube serves some ads through normal video delivery, so an ad-free session is not promised.</p>
-        </details>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="wrap">
         <div class="cta">
           <div>
             <h2>Want the automatic version?</h2>
@@ -250,14 +221,12 @@
         <ul>
           <li><a href="extension">The extension</a></li>
           <li><a href="about">About &amp; method</a></li>
-          <li><a href="about#limits">What it cannot do</a></li>
           <li><a href="https://github.com/Jessedrt/BrowserGuard" rel="noopener">Source on GitHub</a></li>
         </ul>
       </div>
     </div>
     <div class="footer-bottom">
       <span>© <span data-year>2026</span> BrowserGuard · SIWES mini project</span>
-      <span>Not a substitute for antivirus or professional security advice.</span>
     </div>
   </div>
 </footer>

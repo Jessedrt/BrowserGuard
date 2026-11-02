@@ -375,10 +375,6 @@ input[type="range"] { flex: 1; accent-color: var(--blue); height: 24px; }
 @media (max-width: 620px) { .signal { grid-template-columns: 1fr; gap: 4px; } }
 
 /* accordion */
-details.faq { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 16px 18px; }
-details.faq + details.faq { margin-top: 10px; }
-details.faq summary { cursor: pointer; font-weight: 700; font-size: 15px; }
-details.faq p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
 
 /* footer */
 .site-footer { padding: 46px 0 34px; border-top: 1px solid var(--line); background: var(--panel); margin-top: 20px; }

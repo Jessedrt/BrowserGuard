@@ -7,7 +7,7 @@ runs in the visitor's browser.
 site/
   index.html                     tools hub and quick link check
   extension.html                 the Chromium extension as one offering
-  about.html                     method, privacy statement and limits (#limits)
+  about.html                     project, scoring method, privacy statement
   tools/
     link-checker.html            URL and email-link phishing analysis
     password-strength.html       guess-count and pattern analysis
