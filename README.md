@@ -22,6 +22,7 @@ Advertising and tracking requests expose browsing activity and can lead to unwan
 - **Trust the current site from the popup.** A one-click trust control adds or removes the exact host on the allowlist and immediately re-scans, showing when trust comes from a parent domain.
 - **Copy summary.** The dashboard can copy a plain-text protection summary — counts, active protections, feed coverage, list sizes, and the version — for a report or demonstration record.
 - **Interface polish.** The popup, dashboard and warning page now show the real shield mark instead of a placeholder glyph, the dashboard sidebar highlights the section you are viewing while scrolling, and the footer displays the running version.
+- **Popup redesign.** The popup now uses a calmer dark security dashboard with a clearer current-site verdict, color-coded risk states, compact genuine blocking statistics, readable protection controls, and simpler actions.
 - Settings changes no longer surface as a false error when rule application fails; the saved setting is kept and the rule problem is reported in the status pill and dashboard.
 - `npm test` works again. The previous script passed an unsupported Node flag, so the suite could not start on current Node versions.
 

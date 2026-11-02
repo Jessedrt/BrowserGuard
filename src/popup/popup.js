@@ -48,7 +48,7 @@ async function scan() {
   $('risk-basis').textContent = result.allowlisted ? 'URL checks skipped for this site'
     : result.customMatch ? 'Matched your custom blocklist'
     : result.knownMatch ? 'Matched the local URLhaus malware-domain feed'
-    : `Local URL heuristic · signal score ${result.score}/99${result.risk === 'SAFE' ? ' · not a safety guarantee' : ''}`;
+    : `Local URL heuristic · signal score ${result.score}/99`;
   $('risk-basis').hidden = false;
   const list = $('risk-reasons');
   list.replaceChildren();
