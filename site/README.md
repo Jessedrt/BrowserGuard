@@ -54,6 +54,7 @@ other than `site/` itself.
 
 ### Netlify
 
+Step-by-step instructions live in [`docs/DEPLOY-NETLIFY.md`](../docs/DEPLOY-NETLIFY.md).
 Two routes, both free:
 
 **Drag and drop (fastest, no repository connection).** Build the upload archive and

@@ -1,10 +1,9 @@
 # Netlify configuration for the BrowserGuard security-tools site.
 #
 # The site is plain HTML, CSS and ES modules with no build step, so Netlify just
-# publishes the folder. If you deploy by drag-and-drop (app.netlify.com/drop),
-# this file is ignored — the headers below then need to be added in the Netlify
-# UI under Site configuration → Headers. Deploying from this repository applies
-# them automatically.
+# publishes the folder. This file is only read when Netlify deploys from the Git
+# repository. For a drag-and-drop deploy (app.netlify.com/drop) this file is not
+# used, but site/_headers is, so the same security headers still apply.
 
 [build]
   publish = "site"
