@@ -8,6 +8,6 @@ if (form) {
     event.preventDefault();
     const value = document.getElementById('quick-url').value.trim();
     if (!value) return;
-    location.href = `tools/link-checker.html?url=${encodeURIComponent(value)}`;
+    location.href = `tools/link-checker?url=${encodeURIComponent(value)}`;
   });
 }
