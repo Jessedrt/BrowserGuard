@@ -31,6 +31,7 @@ npm run site:serve     # http://localhost:8099
 npm run site:check     # links, accessibility basics, CSP safety, engine drift
 npm run site:sync      # refresh assets/js/engine from src/security
 npm run site:zip       # build deploy/browserguard-site.zip for drag-and-drop hosts
+npm run site:url -- <url>   # set absolute social tags, sitemap and robots
 ```
 
 The site must be served over HTTP rather than opened from the file system, because
@@ -50,7 +51,8 @@ and run `npm run site:sync`.
 
 The folder can be published as-is (Netlify, Cloudflare Pages, GitHub Pages, an S3
 bucket, or any static host). There is no build command and no output directory
-other than `site/` itself.
+other than `site/` itself. No CI workflow is included; Netlify builds nothing, so
+deployment is just "publish this folder".
 
 ### Netlify
 
@@ -93,10 +95,11 @@ Both `netlify.toml` and `site/_headers` send:
 
 ### Before going live
 
-1. Set absolute `og:image` and `og:url` values once you know the domain — social
-   previews do not resolve relative paths.
-2. Add a `sitemap.xml` with absolute URLs if you want search engines to index the
-   tools, and reference it from `robots.txt`.
+1. Run `npm run site:url -- https://your-site.example` — it sets absolute
+   `og:url`, `og:image` and `canonical` tags on every page, writes `sitemap.xml`
+   and references it from `robots.txt`. Social previews do not resolve relative
+   paths, so this step is required before sharing the link.
+2. Rebuild the upload archive with `npm run site:zip` and redeploy.
 3. Check the site on a phone; every link is relative, so a sub-path deployment
    works unchanged.
 

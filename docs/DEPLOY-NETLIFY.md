@@ -123,33 +123,25 @@ old one is deleted.
 
 ---
 
-## After you have the URL — three finishing steps
+## After you have the URL — one command
 
-These need the final domain, which is why they are last.
+Masthead metadata has to be absolute for link previews on WhatsApp, LinkedIn or X,
+and a sitemap has to be absolute too. Both are automated:
 
-1. **Set absolute social-image URLs.** In each page's `<head>`, change
+```bash
+npm run site:url -- https://YOUR-SITE.netlify.app   # og:url, og:image, canonical, sitemap, robots
+npm run site:check                                   # confirms nothing is inconsistent
+npm run site:zip                                     # rebuild the upload archive
+```
 
-   ```html
-   <meta property="og:image" content="assets/img/og.jpg">
-   ```
+`site:url` rewrites all seven pages, generates `site/sitemap.xml` and points
+`robots.txt` at it. It is safe to re-run — run it again if you rename the site or
+attach a custom domain.
 
-   to
-
-   ```html
-   <meta property="og:image" content="https://YOUR-SITE.netlify.app/assets/img/og.jpg">
-   ```
-
-   and add `<meta property="og:url" content="https://YOUR-SITE.netlify.app/">`
-   (with the correct path per page). Relative paths work for browsing but not for
-   link previews on WhatsApp, LinkedIn or X.
-
-2. **Add a sitemap** if you want search engines to index the tools. Create
-   `site/sitemap.xml` listing the seven pages with absolute URLs, then add
-   `Sitemap: https://YOUR-SITE.netlify.app/sitemap.xml` to `site/robots.txt`.
-
-3. **Test the social card.** Paste the URL into
-   <https://www.opengraph.xyz/> or the LinkedIn Post Inspector. You should see the
-   BrowserGuard card with the title, subtitle and blue artwork.
+Then redeploy: drag the rebuilt zip onto Netlify Drop again, or push to `main` if
+you connected the repository. Finally, test the card by pasting the URL into
+<https://www.opengraph.xyz/> — you should see the blue BrowserGuard card with the
+title and subtitle.
 
 ---
 
@@ -175,6 +167,7 @@ Then repeat the three finishing steps above with the real domain.
 - [ ] The generator produces a different password each time you press ↻.
 - [ ] The privacy check fills in all 14 signals.
 - [ ] `curl -sI` shows the CSP header.
+- [ ] `npm run site:url -- <your-url>` has been run and the social card resolves.
 - [ ] No CSP errors in the browser console.
 - [ ] The site works at phone width.
 

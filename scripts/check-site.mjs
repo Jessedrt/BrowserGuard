@@ -27,6 +27,8 @@ async function walk(directory) {
 const files = await walk(SITE);
 const htmlFiles = files.filter(file => file.endsWith('.html'));
 const skips = ['http://', 'https://', 'mailto:', '#', 'data:'];
+// Origin of the deployed site, taken from the canonical tags once they are set.
+let siteOrigin = null;
 
 for (const file of htmlFiles) {
   const html = await readFile(file, 'utf8');
@@ -45,9 +47,18 @@ for (const file of htmlFiles) {
 
   // 2. external hosts that the page can actually navigate to or fetch.
   // Placeholder text and data-* sample links are inert and are not scanned.
+  // Self-referencing canonical and og:url tags are declarations, not fetches, so
+  // the site's own origin is derived from them and allowed.
+  const canonical = html.match(/<link rel="canonical" href="(https?:\/\/[^"]+)"/);
+  if (canonical) {
+    const origin = new URL(canonical[1]).origin;
+    if (siteOrigin && siteOrigin !== origin) problems.push(`${page}: canonical origin ${origin} differs from ${siteOrigin}`);
+    siteOrigin = siteOrigin || origin;
+  }
   for (const match of html.matchAll(/(?:href|src)="(https?:\/\/[^"]+)"/g)) {
     const url = match[1];
     if (ALLOWED_EXTERNAL.some(prefix => url.startsWith(prefix))) continue;
+    if (siteOrigin && new URL(url).origin === siteOrigin) continue;
     problems.push(`${page}: unexpected external link ${url}`);
   }
 
@@ -92,6 +103,20 @@ for (const file of htmlFiles) {
       if (!await stat(target).then(() => true, () => false)) problems.push(`${page}: import not found ${imported[1]} in ${script}`);
     }
   }
+}
+
+// 6. if a sitemap exists, every page must be listed and every URL must live on
+// one origin that matches the canonical tags.
+const sitemapPath = join(SITE, 'sitemap.xml');
+const sitemap = await readFile(sitemapPath, 'utf8').catch(() => null);
+if (sitemap) {
+  const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
+  const origins = new Set(locs.map(loc => new URL(loc).origin));
+  if (origins.size > 1) problems.push(`sitemap.xml mixes origins: ${[...origins].join(', ')}`);
+  if (siteOrigin && !origins.has(siteOrigin)) problems.push(`sitemap.xml origin does not match the canonical tags (${siteOrigin})`);
+  if (locs.length !== htmlFiles.length) problems.push(`sitemap.xml lists ${locs.length} URLs for ${htmlFiles.length} pages`);
+  const robots = await readFile(join(SITE, 'robots.txt'), 'utf8').catch(() => '');
+  if (!/Sitemap: https?:\/\//.test(robots)) problems.push('robots.txt does not reference the sitemap');
 }
 
 const size = (await Promise.all(files.map(async file => (await stat(file)).size))).reduce((total, value) => total + value, 0);
