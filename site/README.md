@@ -17,12 +17,16 @@ site/
   _headers                       security headers for static hosts (Netlify et al.)
   assets/
     css/site.css                 one design system, light and dark
-    img/                         logo, favicon, hero, Open Graph image
+    img/                         logo, favicon, Open Graph image
     js/site.js                   navigation, year, clipboard helper
     js/lib/password.js           scoring, generation, 256-word list
     js/tools/*.js                one module per tool page
     js/engine/                   GENERATED from src/security — do not edit
 ```
+
+Links between pages are written **without** the `.html` suffix, because that is the
+URL Netlify serves (`/tools/link-checker`); the `.html` form redirects. The local dev
+server and `npm run site:check` both understand the extensionless form.
 
 ## Run it locally
 
