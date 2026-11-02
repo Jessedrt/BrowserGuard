@@ -84,6 +84,29 @@ Advertising and tracking requests expose browsing activity and can lead to unwan
 - Popup, dashboard, protection toggles, local event history, allowlist, custom blocklist, and settings.
 - No telemetry, analytics, remote JavaScript, client-side API secrets, or browsing-URL reputation queries.
 
+## Website and security tools
+
+`site/` is a standalone static website that hosts four privacy tools built around
+the same analysis the extension uses:
+
+| Tool | What it does |
+| --- | --- |
+| Link and phishing checker | Structural URL analysis for a single link or up to ten links pasted from email text. |
+| Password strength | Guess-count estimate with penalties for known passwords, keyboard runs, repeats and years. |
+| Password generator | Random passwords and 256-word passphrases from `crypto.getRandomValues()`, with an entropy figure. |
+| Browser privacy check | Lists the signals any site can read (screen, timezone, graphics card, canvas hash) and explains them. |
+
+The site runs entirely in the browser: no backend, no analytics, no cookies, no
+third-party fonts. The only outbound request is an explicitly opt-in breach check
+that uses k-anonymity — the browser sends a five-character SHA-1 prefix to
+`api.pwnedpasswords.com`, never the password or the full hash.
+
+The site's URL engine is generated from `src/security/` by `npm run site:sync`, and
+`npm run site:check` fails if the copy drifts, so a fix in one place applies to the
+extension and the website together. Serve it with `npm run site:serve`
+(`http://localhost:8099`); the tools are ES modules and need HTTP rather than
+`file://`. Deployment notes are in `site/README.md`.
+
 ## Architecture
 
 ```text
@@ -105,8 +128,12 @@ src/popup/                       compact current-site controls
 src/dashboard/                   full dashboard and list management
 src/warning/                     navigation interstitial
 src/ui/common.css                shared visual design
+site/                            static security-tools website (no build step)
+site/assets/js/engine/           generated copies of src/security for the site
 tests/                           safe logic fixtures and local rule demo
 scripts/check.mjs                manifest and rule audit
+scripts/check-site.mjs           site links, accessibility basics and engine drift
+scripts/sync-site-engine.mjs     copies the shared analysis engine into the site
 ```
 
 The worker observes top-level HTTP(S) navigation with `webNavigation.onBeforeNavigate`, analyzes the URL, and uses `tabs.update` to show the extension warning page. It stores the pending original URL in Chrome's temporary `storage.session` for that tab, so the warning and one-time bypass survive a service-worker restart. Clicking **Continue anyway** grants one navigation attempt for that exact URL, expiring after two minutes. No persistent exception is added; session data is discarded when the browser session ends.
@@ -152,7 +179,9 @@ Chrome 120 or newer is required for the demonstrated Chrome setup. Browser versi
 
 ## Testing and live demonstration
 
-Run `npm test` for URL parsing, domain normalization, IP/punycode, subdomain and lookalike scoring, allowlist/blocklist precedence, feed parsing, dynamic-rule budgeting and statistics batching. Run `npm run check` for the MV3 manifest, rule IDs, and unsafe-code patterns. Both are dependency-free and run on Node 20 or newer.
+Run `npm run site:check` for the website: broken internal links, images without alt
+text, labels without matching inputs, unexpected external hosts, and drift between
+the site's analysis engine and `src/security`. Run `npm test` for URL parsing, domain normalization, IP/punycode, subdomain and lookalike scoring, allowlist/blocklist precedence, feed parsing, dynamic-rule budgeting and statistics batching. Run `npm run check` for the MV3 manifest, rule IDs, and unsafe-code patterns. Both are dependency-free and run on Node 20 or newer.
 
 For a safe live demonstration:
 

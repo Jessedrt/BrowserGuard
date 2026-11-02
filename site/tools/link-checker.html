@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Link &amp; phishing checker — BrowserGuard</title>
+<meta name="description" content="Paste a URL or the links from an email and see the phishing signals behind the verdict. Runs entirely in your browser; the link is never uploaded.">
+<meta name="theme-color" content="#2f6bff">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="../index.html">
+      <span class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 19 5.7v5.7c0 4.2-3 7.3-7 8.6-4-1.3-7-4.4-7-8.6V5.7L12 3Z"/><path d="m9 11.8 2.2 2.3 4.1-4.2"/></svg>
+      </span>
+      <span>BrowserGuard<small>Security tools</small></span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav class="nav" id="site-nav" data-open="false" aria-label="Main">
+      <a href="../index.html#tools">Tools</a>
+      <a href="../extension.html">Extension</a>
+      <a href="../about.html">About</a>
+      <a class="nav-cta" href="link-checker.html" aria-current="page">Check a link</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap">
+    <div class="page-head">
+      <div class="crumbs"><a href="../index.html">Home</a> <span aria-hidden="true">/</span> <span>Link checker</span></div>
+      <h1>Link &amp; phishing checker</h1>
+      <p>Paste a suspicious link, or the links from an email, to see why it might be a phishing attempt. The analysis compares the address against known deception patterns; it does not open the page or contact the site.</p>
+    </div>
+
+    <div class="tool-shell">
+      <div>
+        <section class="panel">
+          <div class="tabs" role="tablist" aria-label="What to check">
+            <button type="button" role="tab" id="tab-url" aria-selected="true" aria-controls="panel-url" data-mode="url">Single URL</button>
+            <button type="button" role="tab" id="tab-email" aria-selected="false" aria-controls="panel-email" data-mode="email" tabindex="-1">Email text</button>
+          </div>
+
+          <form id="check-form" autocomplete="off" novalidate>
+            <div id="panel-url" role="tabpanel" aria-labelledby="tab-url">
+              <div class="field">
+                <label for="url-input">Website URL</label>
+                <div class="input-row">
+                  <input id="url-input" name="url" type="url" inputmode="url" spellcheck="false" placeholder="https://example.com/verify" maxlength="2048" required>
+                  <button class="btn btn-primary" id="submit-url" type="submit">Check link</button>
+                </div>
+              </div>
+            </div>
+
+            <div id="panel-email" role="tabpanel" aria-labelledby="tab-email" hidden>
+              <div class="field">
+                <label for="email-input">Email text containing links</label>
+                <textarea id="email-input" name="email" spellcheck="false" placeholder="Paste the message. Up to 10 links will be checked." maxlength="20000"></textarea>
+                <p class="hint">Only explicit http and https links are extracted. The text itself is not analysed, stored or sent anywhere.</p>
+                <div><button class="btn btn-primary" type="submit">Check links</button></div>
+              </div>
+            </div>
+          </form>
+
+          <p class="error-msg" id="error" role="alert"></p>
+          <div class="result" id="result" aria-live="polite"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title"><h2>What gets checked</h2></div>
+          <div class="facts">
+            <div class="fact"><span>Lookalike brands</span><strong>Typos such as paypa1.com</strong></div>
+            <div class="fact"><span>Address form</span><strong>IP hosts, deep subdomains</strong></div>
+            <div class="fact"><span>Deception</span><strong>Encoded and user-info tricks</strong></div>
+            <div class="fact"><span>Context</span><strong>Shorteners, HTTP logins</strong></div>
+          </div>
+          <div class="note" style="margin-top:16px">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
+            <div><strong>A clean result is not a safety guarantee.</strong> These are structural signals. A well-built phishing site on a normal-looking domain can pass every one of them.</div>
+          </div>
+        </section>
+      </div>
+
+      <aside>
+        <section class="panel aside-panel">
+          <h2>How the score works</h2>
+          <p>Each suspicious trait adds points. The total maps to a band:</p>
+          <ul>
+            <li><strong>0</strong> — no known indicators</li>
+            <li><strong>1–29</strong> — low risk, minor oddity</li>
+            <li><strong>30–59</strong> — suspicious, check carefully</li>
+            <li><strong>60+</strong> — high risk, do not enter details</li>
+          </ul>
+          <p style="margin-top:12px">The number is a weighted tally, not a probability. “40/99” does not mean a 40% chance of fraud.</p>
+        </section>
+
+        <section class="panel aside-panel">
+          <h2>Try a safe example</h2>
+          <p>These test addresses are reserved by the standards body and cannot belong to a real site:</p>
+          <ul>
+            <li><a href="#" data-sample="https://example.com/">https://example.com/</a> — clean</li>
+            <li><a href="#" data-sample="http://paypa1.example/verify">http://paypa1.example/verify</a> — lookalike brand</li>
+            <li><a href="#" data-sample="http://192.0.2.4/login">http://192.0.2.4/login</a> — IP address host</li>
+            <li><a href="#" data-sample="https://secure-login.apple.com.account-update.example/">deep subdomain impersonation</a></li>
+          </ul>
+        </section>
+
+        <section class="panel aside-panel">
+          <h2>Privacy</h2>
+          <p>No request is made to the address you paste. No data leaves this page; there is no server component. Closing the tab discards everything.</p>
+        </section>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-bottom">
+      <span>© <span data-year>2026</span> BrowserGuard · SIWES mini project</span>
+      <span><a href="../about.html">Method and limits</a></span>
+    </div>
+  </div>
+</footer>
+
+<script type="module" src="../assets/js/tools/link-checker.js"></script>
+<script type="module" src="../assets/js/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About, method and limits — BrowserGuard</title>
+<meta name="description" content="How BrowserGuard's tools work, what data they do and do not handle, and the limits of local analysis. A SIWES mini project by Ayomide Jesse, 2026.">
+<meta name="theme-color" content="#2f6bff">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="index.html">
+      <span class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 19 5.7v5.7c0 4.2-3 7.3-7 8.6-4-1.3-7-4.4-7-8.6V5.7L12 3Z"/><path d="m9 11.8 2.2 2.3 4.1-4.2"/></svg>
+      </span>
+      <span>BrowserGuard<small>Security tools</small></span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav class="nav" id="site-nav" data-open="false" aria-label="Main">
+      <a href="index.html#tools">Tools</a>
+      <a href="extension.html">Extension</a>
+      <a href="about.html" aria-current="page">About</a>
+      <a class="nav-cta" href="tools/link-checker.html">Check a link</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap">
+    <div class="page-head">
+      <div class="crumbs"><a href="index.html">Home</a> <span aria-hidden="true">/</span> <span>About</span></div>
+      <h1>About, method and limits</h1>
+      <p>BrowserGuard is a SIWES mini project: a set of practical security tools, plus the Chromium extension they share code with. This page explains how the tools work and what they cannot tell you.</p>
+    </div>
+
+    <div class="tool-shell" style="grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)">
+      <div>
+        <section class="panel">
+          <div class="panel-title"><h2>The project</h2></div>
+          <p>BrowserGuard was developed in 2026 as a Students Industrial Work Experience Scheme (SIWES) mini project by <strong>Ayomide Jesse</strong>. It has two parts that share one idea: make browser-level security checks explainable rather than opaque.</p>
+          <ul class="check-list" style="margin-top:14px">
+            <li><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span><strong>The site</strong> — four tools you run deliberately, one input at a time.</span></li>
+            <li><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span><strong>The extension</strong> — the same analysis, applied automatically while you browse.</span></li>
+          </ul>
+          <p style="margin-top:16px">The URL-analysis engine is a single implementation in <span class="mono">src/security/</span>. The copy used by this site is generated from it, so a rule fixed in one place is fixed in both. Source: <a href="https://github.com/Jessedrt/BrowserGuard" rel="noopener">github.com/Jessedrt/BrowserGuard</a>.</p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title"><h2>How the link checker decides</h2></div>
+          <p>Each trait adds a weighted number of points, and the total is capped at 99:</p>
+          <div class="facts">
+            <div class="fact"><span>45 points</span><strong>Lookalike brand domain, misleading user-info section</strong></div>
+            <div class="fact"><span>35–30 points</span><strong>IP address host, many subdomains, punycode</strong></div>
+            <div class="fact"><span>20 points</span><strong>Long domain, odd encoding, HTTP login page</strong></div>
+            <div class="fact"><span>15–10 points</span><strong>Link shortener, unusually complex path</strong></div>
+          </div>
+          <p style="margin-top:16px">The bands are: <strong>0</strong> no indicators, <strong>1–29</strong> low risk, <strong>30–59</strong> suspicious, <strong>60+</strong> high risk. The score is a weighted tally, not a probability — “40/99” does not mean a 40% chance that a site is fraudulent.</p>
+        </section>
+
+        <section class="panel" id="limits">
+          <div class="panel-title"><h2>What these tools cannot do</h2></div>
+          <details class="faq" open>
+            <summary>They cannot prove a site is safe</summary>
+            <p>A clean result means no configured structural signal matched. Phishing pages on ordinary-looking domains pass these checks, which is why the wording is “no known indicators”, never “safe”.</p>
+          </details>
+          <details class="faq">
+            <summary>They do not open or contact the link</summary>
+            <p>There is no server component, so nothing is fetched, no DNS lookup is performed, and no certificate is inspected. A page cannot be judged by its content here.</p>
+          </details>
+          <details class="faq">
+            <summary>The password score is a model, not a measurement</summary>
+            <p>It estimates the guesses an attacker would need, penalising known passwords and predictable patterns. It cannot know whether a specific password has been reused elsewhere, and it does not know a target site's actual rate limiting.</p>
+          </details>
+          <details class="faq">
+            <summary>The privacy check reports what this browser exposes</summary>
+            <p>It is a demonstration of available signals, not a complete fingerprinting test and not a score you can “pass”. Blocking more signals can make a browser rarer and therefore easier to single out.</p>
+          </details>
+          <details class="faq">
+            <summary>None of this replaces antivirus or professional advice</summary>
+            <p>Browser-level checks cover what a browser can see. They do not scan a device, detect installed malware, or respond to an active incident.</p>
+          </details>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title"><h2>Privacy statement</h2></div>
+          <ul class="check-list" style="margin-top:0">
+            <li><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>No accounts, cookies, analytics or third-party fonts.</span></li>
+            <li><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Link and password checks are processed in the page and never transmitted.</span></li>
+            <li><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>The one optional network request — the breach check — uses k-anonymity: a five-character SHA-1 prefix and nothing else.</span></li>
+            <li><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Nothing is written to local storage or the URL, apart from a link you paste into the checker yourself.</span></li>
+          </ul>
+        </section>
+      </div>
+
+      <aside>
+        <section class="panel aside-panel">
+          <h2>Project facts</h2>
+          <ul>
+            <li><strong>Author:</strong> Ayomide Jesse</li>
+            <li><strong>Year:</strong> 2026</li>
+            <li><strong>Programme:</strong> SIWES mini project</li>
+            <li><strong>Extension version:</strong> 1.7</li>
+            <li><strong>Platform:</strong> Chromium (Manifest V3), Chrome 120+</li>
+            <li><strong>Stack:</strong> plain HTML, CSS and JavaScript — no frameworks, no tracking</li>
+          </ul>
+        </section>
+        <section class="panel aside-panel">
+          <h2>Design notes</h2>
+          <p>Blue signals protection, green an absence of indicators, amber suspicion and red high risk. Those colours are used consistently across the site and the extension, and they are never used decoratively.</p>
+        </section>
+        <section class="panel aside-panel">
+          <h2>Feedback</h2>
+          <p>Found a wrong verdict, or a lookalike pattern worth adding? Open an issue on the <a href="https://github.com/Jessedrt/BrowserGuard/issues" rel="noopener">GitHub repository</a>.</p>
+        </section>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-bottom">
+      <span>© <span data-year>2026</span> BrowserGuard · SIWES mini project · Ayomide Jesse</span>
+      <span><a href="index.html">Back to the tools</a></span>
+    </div>
+  </div>
+</footer>
+
+<script type="module" src="assets/js/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What your browser reveals — BrowserGuard</title>
+<meta name="description" content="See the identifying signals every website can read from your browser: screen size, timezone, fonts, graphics card, and more. Nothing is transmitted.">
+<meta name="theme-color" content="#2f6bff">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="../index.html">
+      <span class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 19 5.7v5.7c0 4.2-3 7.3-7 8.6-4-1.3-7-4.4-7-8.6V5.7L12 3Z"/><path d="m9 11.8 2.2 2.3 4.1-4.2"/></svg>
+      </span>
+      <span>BrowserGuard<small>Security tools</small></span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav class="nav" id="site-nav" data-open="false" aria-label="Main">
+      <a href="../index.html#tools">Tools</a>
+      <a href="../extension.html">Extension</a>
+      <a href="../about.html">About</a>
+      <a class="nav-cta" href="link-checker.html">Check a link</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap">
+    <div class="page-head">
+      <div class="crumbs"><a href="../index.html">Home</a> <a href="../index.html#tools">Tools</a> <span aria-hidden="true">/</span> <span>Browser privacy check</span></div>
+      <h1>What your browser reveals</h1>
+      <p>Every website can read a surprising amount without asking permission. This page reads those values from your own browser and explains which ones help identify a device. It sends nothing anywhere — there is no server to send them to.</p>
+    </div>
+
+    <div class="tool-shell">
+      <div>
+        <section class="panel">
+          <div class="panel-title">
+            <h2>Your current signals</h2>
+            <button class="btn btn-sm" type="button" id="refresh">Re-read</button>
+          </div>
+
+          <div class="verdict" id="summary" data-tone="warn">
+            <span class="v-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </span>
+            <div class="v-body">
+              <strong id="summary-title">Reading your browser…</strong>
+              <div class="v-meta" id="summary-meta">This runs locally, in this tab.</div>
+            </div>
+          </div>
+
+          <dl class="signal-list" id="signals"></dl>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title"><h2>What this means</h2></div>
+          <p class="hint" style="margin-top:-6px">On their own, none of these values gives away who you are. Together they form a <strong>fingerprint</strong>. Combinations of screen size, timezone, language, installed fonts and graphics card are often distinctive enough to recognise the same browser on a return visit — even after cookies are cleared, and often across different sites.</p>
+          <p class="hint">This is why “we do not collect personal data” and “we cannot identify you” are different claims. A fingerprint is not a name, but it can link visits.</p>
+        </section>
+      </div>
+
+      <aside>
+        <section class="panel aside-panel">
+          <h2>Reduce your exposure</h2>
+          <ul>
+            <li><strong>Update your browser.</strong> Newer versions round or standardise more values and split trackers from the page.</li>
+            <li><strong>Block third-party requests.</strong> A tracker cannot fingerprint you if its script never loads — that is what the BrowserGuard extension's tracker blocking is for.</li>
+            <li><strong>Use the browser's privacy settings</strong> for cookie blocking and tracking protection. These are more reliable than any single extension.</li>
+            <li><strong>Do not chase a perfect score.</strong> Blocking some signals can make a browser rarer, and therefore more identifiable. Consistency with a mainstream browser is often better than aggressive spoofing.</li>
+            <li><strong>Separate contexts.</strong> Use a private window or a separate browser profile for sensitive accounts.</li>
+          </ul>
+        </section>
+        <section class="panel aside-panel">
+          <h2>What is not shown</h2>
+          <p>This page does not read your IP address (that would require a server), your browsing history, your keystrokes, your files, or the content of other tabs. Browsers do not permit it.</p>
+          <p><a href="../about.html#limits">Read the full limits →</a></p>
+        </section>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-bottom">
+      <span>© <span data-year>2026</span> BrowserGuard · SIWES mini project</span>
+      <span><a href="../about.html">Method and limits</a></span>
+    </div>
+  </div>
+</footer>
+
+<script type="module" src="../assets/js/tools/privacy-check.js"></script>
+<script type="module" src="../assets/js/site.js"></script>
+</body>
+</html>
