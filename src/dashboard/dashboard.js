@@ -69,6 +69,11 @@ function render(data) {
   $('overall').className = `pill ${data.ruleError ? 'danger' : on === 4 ? 'good' : on ? 'warn' : 'danger'}`;
   if (data.ruleError) say(data.ruleError);
   $('feed-status').textContent = `${data.feed.length.toLocaleString()} domains · ${data.feedSource === 'downloaded' ? 'downloaded' : 'bundled snapshot'} ${new Date(data.feedUpdatedAt).toLocaleString()}`;
+  const applied = Number.isFinite(data.feedRulesApplied) ? data.feedRulesApplied : 0;
+  const capped = data.settings.malicious && applied < data.feed.length;
+  $('rules-status').textContent = data.settings.malicious
+    ? `${applied.toLocaleString()} of ${data.feed.length.toLocaleString()} feed domains are enforced as browser rules · ${Number(data.dynamicRuleCount || 0).toLocaleString()} dynamic rules active${capped ? ' · the browser rule quota limits how much of the feed can be applied' : ''}`
+    : 'Malicious-site protection is off, so no custom or feed rules are applied.';
   $('history-list').replaceChildren();
   if (!data.history.length) { const p = document.createElement('p'); p.className = 'muted'; p.textContent = 'No security warnings recorded.'; $('history-list').append(p); }
   for (const event of data.history) {
@@ -139,5 +144,46 @@ $('refresh-feed').addEventListener('click', async event => {
   catch(error) { say(`Feed update failed: ${error.message}`); }
   finally { event.target.disabled = false; }
 });
-function activeNav() { for (const a of document.querySelectorAll('nav a')) a.classList.toggle('active', a.hash === (location.hash || '#overview')); }
-window.addEventListener('hashchange', activeNav); activeNav();
+const navLinks = [...document.querySelectorAll('nav a')];
+const sections = [...document.querySelectorAll('main section[id]')];
+function highlight(id) { for (const a of navLinks) a.classList.toggle('active', a.hash === `#${id}`); }
+function activeNav() { highlight((location.hash || '#overview').slice(1)); }
+function spy() {
+  const offset = window.scrollY + 160;
+  let current = sections[0]?.id;
+  for (const section of sections) if (section.offsetTop <= offset) current = section.id;
+  highlight(current);
+}
+let scrolling = false;
+window.addEventListener('scroll', () => {
+  if (scrolling) return;
+  scrolling = true;
+  requestAnimationFrame(() => { spy(); scrolling = false; });
+}, {passive: true});
+window.addEventListener('hashchange', activeNav);
+activeNav();
+try { const version = chrome.runtime.getManifest().version; $('footer-version').textContent = `BrowserGuard v${version}`; } catch { /* Static preview without extension APIs. */ }
+
+$('copy-summary').addEventListener('click', async () => {
+  if (!state) return;
+  const active = ['ads','trackers','phishing','malicious'].filter(key => state.settings[key]).map(key => key === 'malicious' ? 'malicious sites' : key).join(', ');
+  const report = [
+    `BrowserGuard v${chrome.runtime.getManifest().version} — protection summary`,
+    `Generated: ${new Date().toLocaleString()}`,
+    `Ad requests blocked: ${state.stats.ads}`,
+    `Tracker requests blocked: ${state.stats.trackers}`,
+    `Suspected phishing warnings: ${state.stats.phishing}`,
+    `Known malicious-site warnings: ${state.stats.malicious}`,
+    `User-blocked site warnings: ${state.stats.custom}`,
+    `Protection enabled for: ${active || 'nothing'}`,
+    `Threat feed: ${state.feed.length} domains (${state.feedSource === 'downloaded' ? 'downloaded' : 'bundled snapshot'}), ${state.feedRulesApplied || 0} enforced as browser rules`,
+    `Trusted domains: ${state.allowlist.length} · Custom blocked domains: ${state.blocklist.length}`,
+    'Counts come from real rule-match feedback and actual warning interstitials; they are not estimates.'
+  ].join('\n');
+  try {
+    await navigator.clipboard.writeText(report);
+    say('Summary copied to clipboard.');
+  } catch (error) {
+    say(`Could not copy the summary: ${error.message}`);
+  }
+});

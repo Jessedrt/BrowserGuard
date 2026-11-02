@@ -38,6 +38,15 @@ header .pill { padding: 5px 12px; font-size: 11px; box-shadow: 0 4px 12px rgba(0
 #risk-basis { margin-top: 4px; font-size: 11px; line-height: 1.4; }
 #risk-reasons { margin: 7px 0 0; padding-left: 16px; font-size: 11px; line-height: 1.45; }
 #risk-reasons li + li { margin-top: 2px; }
+.site-actions { display: flex; gap: 6px; margin-top: 9px; }
+.site-actions:has(button[hidden]) { display: none; }
+.chip {
+  border: 1.5px solid var(--line); border-radius: 100px; padding: 5px 12px;
+  background: var(--bg); color: var(--accent); font-size: 11px; font-weight: 750;
+  transition: border-color .15s, background-color .15s;
+}
+.chip:hover { border-color: var(--accent); background: var(--accent2); }
+.chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent2); }
 
 /* the three counters share one rounded panel */
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); overflow: hidden; background: var(--panel); border: 1px solid var(--line); border-radius: 24px; box-shadow: var(--shadow); }

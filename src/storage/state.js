@@ -4,7 +4,7 @@ export const DEFAULTS = {
   settings: {ads: true, trackers: true, phishing: true, malicious: true, feedUpdates: true, youtubeAdvance: true},
   allowlist: [], blocklist: [], feed: SEED_DOMAINS, feedUpdatedAt: SEED_UPDATED_AT, feedSource: 'bundled',
   stats: {ads: 0, trackers: 0, phishing: 0, malicious: 0, custom: 0},
-  history: [], ruleError: null
+  history: [], ruleError: null, feedRulesApplied: 0, dynamicRuleCount: 0
 };
 
 export async function getState() {

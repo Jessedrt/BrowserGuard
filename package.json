@@ -1,10 +1,10 @@
 {
   "name": "browserguard",
-  "version": "1.6.2",
+  "version": "1.7.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test --test-isolation=none --test-concurrency=1 tests/*.test.js",
+    "test": "node --test --test-concurrency=1 tests/*.test.js",
     "check": "node scripts/check.mjs",
     "icons": "node scripts/make-icons.mjs"
   }
