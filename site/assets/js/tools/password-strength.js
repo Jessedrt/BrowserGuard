@@ -1,5 +1,5 @@
 // Password strength page. Nothing typed here leaves the browser.
-import {analyzePassword, formatDuration} from '../lib/password.js';
+import {analyzePassword, formatDuration} from '../lib/password.js?v=2';
 
 const $ = id => document.getElementById(id);
 const input = $('password');

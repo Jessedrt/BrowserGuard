@@ -8,5 +8,13 @@
   Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()
   Cross-Origin-Opener-Policy: same-origin
 
-/assets/*
+# Filenames never change, so anything that can change must revalidate: a long
+# max-age here once kept an old stylesheet alive in browsers for days.
+/*.css
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/img/*
   Cache-Control: public, max-age=604800

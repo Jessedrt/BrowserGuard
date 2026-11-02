@@ -1,7 +1,7 @@
 // Link & phishing checker. Uses the same analyzer as the BrowserGuard extension
 // (assets/js/engine is generated from src/security).
-import {analyzeUrl} from '../engine/analyzer.js';
-import {extractWebLinks} from '../engine/link-extractor.js';
+import {analyzeUrl} from '../engine/analyzer.js?v=2';
+import {extractWebLinks} from '../engine/link-extractor.js?v=2';
 
 const $ = id => document.getElementById(id);
 const form = $('check-form');

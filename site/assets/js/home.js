@@ -1,6 +1,6 @@
 // Homepage quick-check: hands the pasted value to the link checker page, which
 // performs the analysis. Nothing is sent to a server.
-import './site.js';
+import './site.js?v=2';
 
 const form = document.getElementById('quick-check');
 if (form) {

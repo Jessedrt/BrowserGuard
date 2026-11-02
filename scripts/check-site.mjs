@@ -85,7 +85,7 @@ for (const file of htmlFiles) {
 
   // 3c. the theme switch has to be on every page, and the script that applies the
   // saved palette has to be in the head so the first paint is the right theme.
-  if (!/<script src="(?:\.\.\/)*assets\/js\/theme\.js"><\/script>/.test(html)) problems.push(`${page}: missing the theme.js script in <head>`);
+  if (!/<script src="(?:\.\.\/)*assets\/js\/theme\.js(?:\?v=\d+)?"><\/script>/.test(html)) problems.push(`${page}: missing the theme.js script in <head>`);
   if (!/data-theme-toggle/.test(html)) problems.push(`${page}: missing the theme switch button`);
   if (!/<meta name="theme-color" content="[^"]*" media="\(prefers-color-scheme: (?:light|dark)\)">/.test(html)) problems.push(`${page}: theme-color should declare a light and a dark value`);
 }
@@ -105,12 +105,12 @@ for (const file of htmlFiles) {
   const scripts = [...html.matchAll(/<script[^>]*type="module"[^>]*src="([^"]+)"/g)].map(match => match[1]);
   if (page !== 'index.html' && !scripts.length) problems.push(`${page}: no module script`);
   for (const script of scripts) {
-    const modulePath = resolve(dirname(file), script);
+    const modulePath = resolve(dirname(file), script.split('?')[0]);
     const module = await readFile(modulePath, 'utf8').catch(() => null);
     if (!module) { problems.push(`${page}: script not found ${script}`); continue; }
     for (const imported of module.matchAll(/from\s+'([^']+)'/g)) {
       if (!imported[1].startsWith('.')) continue;
-      const target = resolve(dirname(modulePath), imported[1]);
+      const target = resolve(dirname(modulePath), imported[1].split('?')[0]);
       if (!await stat(target).then(() => true, () => false)) problems.push(`${page}: import not found ${imported[1]} in ${script}`);
     }
   }

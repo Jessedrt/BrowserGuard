@@ -1,7 +1,7 @@
 // Password and passphrase generator. All randomness comes from the browser's
 // cryptographic source; nothing is transmitted or persisted.
-import {generatePassword, generatePassphrase, analyzePassword} from '../lib/password.js';
-import {copyText} from '../site.js';
+import {generatePassword, generatePassphrase, analyzePassword} from '../lib/password.js?v=2';
+import {copyText} from '../site.js?v=2';
 
 const $ = id => document.getElementById(id);
 const COLORS = ['var(--red)', 'var(--red)', 'var(--amber)', 'var(--blue)', 'var(--green)'];

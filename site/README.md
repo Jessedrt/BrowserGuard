@@ -25,6 +25,16 @@ site/
     js/engine/                   GENERATED from src/security — do not edit
 ```
 
+## Cache busting
+
+Filenames never change and there is no build step, so a browser can keep an old
+stylesheet after a deploy. Two things prevent that:
+
+- `netlify.toml` / `_headers` make HTML, CSS and JS revalidate on every request
+  (cheap 304s). Only `/assets/img/*` gets a long cache.
+- `npm run site:v` stamps every local asset reference and relative module import
+  with an incrementing `?v=N`. **Run it after changing any CSS or JS.**
+
 Links between pages are written **without** the `.html` suffix, because that is the
 URL Netlify serves (`/tools/link-checker`); the `.html` form redirects. The local dev
 server and `npm run site:check` both understand the extensionless form.
