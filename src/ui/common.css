@@ -57,6 +57,7 @@ a { color: var(--accent); }
   transition: transform .25s;
 }
 .brand:hover .brand-mark { transform: rotate(-8deg) scale(1.06); }
+.brand-mark svg { display: block; }
 .card {
   background: var(--panel); border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow);
   animation: rise .4s cubic-bezier(.2, .8, .2, 1) both;

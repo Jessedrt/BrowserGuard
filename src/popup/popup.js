@@ -1,4 +1,5 @@
 import {riskTone} from '../ui/risk-tone.js';
+import {hostMatches} from '../security/domains.js';
 
 const $ = id => document.getElementById(id);
 const request = async message => {
@@ -7,16 +8,35 @@ const request = async message => {
   return response;
 };
 let currentUrl = null;
+let currentHost = null;
+let lastState = null;
+
+function trustedEntry(state) {
+  if (!currentHost) return null;
+  return state.allowlist.find(domain => hostMatches(currentHost, domain)) || null;
+}
+
+function renderTrust(state) {
+  const entry = trustedEntry(state);
+  const button = $('trust');
+  button.hidden = !currentHost;
+  button.setAttribute('aria-pressed', String(Boolean(entry)));
+  button.textContent = entry
+    ? `Trusted${entry === currentHost ? '' : ` via ${entry}`} — stop trusting`
+    : 'Trust this site';
+}
 
 function render(state) {
-  $('ads-count').textContent = state.stats.ads;
-  $('trackers-count').textContent = state.stats.trackers;
-  $('threats-count').textContent = state.stats.phishing + state.stats.malicious;
+  lastState = state;
+  $('ads-count').textContent = state.stats.ads.toLocaleString();
+  $('trackers-count').textContent = state.stats.trackers.toLocaleString();
+  $('threats-count').textContent = (state.stats.phishing + state.stats.malicious).toLocaleString();
   for (const input of document.querySelectorAll('[data-setting]')) input.checked = state.settings[input.dataset.setting];
   const on = ['ads','trackers','phishing','malicious'].filter(key => state.settings[key]).length;
   $('status').textContent = state.ruleError ? 'Rules need attention' : on === 4 ? 'Protection active' : on ? 'Partial protection' : 'Protection off';
   $('status').className = `pill ${state.ruleError ? 'danger' : on === 4 ? 'good' : on ? 'warn' : 'danger'}`;
   if (state.ruleError) $('message').textContent = state.ruleError;
+  renderTrust(state);
 }
 
 async function scan() {
@@ -45,11 +65,12 @@ try {
   render(await request({type: 'STATE'}));
   const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
   currentUrl = tab?.url && /^https?:/i.test(tab.url) ? tab.url : null;
-  const host = currentUrl ? new URL(currentUrl).hostname : null;
-  $('domain').textContent = host || 'No web page selected';
-  if (host === 'www.youtube.com' || host === 'm.youtube.com') {
+  currentHost = currentUrl ? new URL(currentUrl).hostname : null;
+  $('domain').textContent = currentHost || 'No web page selected';
+  if (currentHost === 'www.youtube.com' || currentHost === 'm.youtube.com') {
     $('youtube-note').hidden = false;
   }
+  if (lastState) renderTrust(lastState);
   if (currentUrl) await scan();
 } catch (error) { $('message').textContent = error.message; }
 
@@ -59,6 +80,23 @@ for (const input of document.querySelectorAll('[data-setting]')) input.addEventL
   catch (error) { render(await request({type: 'STATE'})); $('message').textContent = error.message; }
   finally { input.disabled = false; }
 });
+
+$('trust').addEventListener('click', async () => {
+  if (!currentHost || !lastState) return;
+  const button = $('trust');
+  button.disabled = true;
+  try {
+    const entry = trustedEntry(lastState);
+    render(await request({type: entry ? 'REMOVE_DOMAIN' : 'ADD_DOMAIN', list: 'allowlist', domain: entry || currentHost}));
+    $('message').textContent = entry ? `${entry} is no longer trusted.` : `${currentHost} is now trusted; URL checks and blocking are skipped for it.`;
+    if (currentUrl) await scan();
+  } catch (error) {
+    $('message').textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+});
+
 $('scan').addEventListener('click', () => scan().catch(error => $('message').textContent = error.message));
 $('check-link').addEventListener('click', () => chrome.tabs.create({url: chrome.runtime.getURL('src/dashboard/dashboard.html#check')}));
 $('details').addEventListener('click', () => chrome.tabs.create({url: chrome.runtime.getURL('src/dashboard/dashboard.html#history')}));

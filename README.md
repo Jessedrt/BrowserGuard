@@ -14,6 +14,17 @@ Advertising and tracking requests expose browsing activity and can lead to unwan
 
 ## Features
 
+### v1.7 reliability and interface update
+
+- **Rule sets now fit the browser's quota.** BrowserGuard previously sent up to 15,000 threat-feed domains as dynamic rules in a single call. On Chrome 121 and newer those are *safe* rules within the 30,000-rule allowance, so the shipped 395-domain snapshot and a typical downloaded feed applied normally. On Chrome 120 — still allowed by this manifest's `minimum_chrome_version` — the combined dynamic-rule cap is 5,000, so a larger feed made the atomic `updateDynamicRules` call fail: on a fresh install that left no dynamic rules at all, and after an earlier successful sync the older rule set stayed frozen. The worker now reads `MAX_NUMBER_OF_DYNAMIC_RULES`, reserves headroom, and builds the set in priority order: allowlist, then your blocklist, then as much of the feed as fits. If Chrome still rejects the set, it retries with your lists only instead of failing silently.
+- **Honest coverage reporting.** Settings shows how many feed domains are actually enforced as browser rules, alongside the number of active dynamic rules. A capped feed is stated plainly rather than implied to be fully applied.
+- **Batched statistics writes.** Ad and tracker matches are accumulated in memory and flushed on a short timer or before any popup/dashboard read, instead of forcing a storage write for every blocked request.
+- **Trust the current site from the popup.** A one-click trust control adds or removes the exact host on the allowlist and immediately re-scans, showing when trust comes from a parent domain.
+- **Copy summary.** The dashboard can copy a plain-text protection summary — counts, active protections, feed coverage, list sizes, and the version — for a report or demonstration record.
+- **Interface polish.** The popup, dashboard and warning page now show the real shield mark instead of a placeholder glyph, the dashboard sidebar highlights the section you are viewing while scrolling, and the footer displays the running version.
+- Settings changes no longer surface as a false error when rule application fails; the saved setting is kept and the rule problem is reported in the status pill and dashboard.
+- `npm test` works again. The previous script passed an unsupported Node flag, so the suite could not start on current Node versions.
+
 ### v1.6.2 dashboard layout
 
 - The dashboard uses the supplied larger typography, five-card overview, wider checker, and responsive navigation. Existing statistics, controls, history, and lists continue to use the same real data and actions.
@@ -73,6 +84,32 @@ Advertising and tracking requests expose browsing activity and can lead to unwan
 - Popup, dashboard, protection toggles, local event history, allowlist, custom blocklist, and settings.
 - No telemetry, analytics, remote JavaScript, client-side API secrets, or browsing-URL reputation queries.
 
+## Website and security tools
+
+`site/` is a standalone static website that hosts four privacy tools built around
+the same analysis the extension uses:
+
+| Tool | What it does |
+| --- | --- |
+| Link and phishing checker | Structural URL analysis for a single link or up to ten links pasted from email text. |
+| Password strength | Guess-count estimate with penalties for known passwords, keyboard runs, repeats and years. |
+| Password generator | Random passwords and 256-word passphrases from `crypto.getRandomValues()`, with an entropy figure. |
+| Browser privacy check | Lists the signals any site can read (screen, timezone, graphics card, canvas hash) and explains them. |
+
+The site runs entirely in the browser: no backend, no analytics, no cookies, no
+third-party fonts. The only outbound request is an explicitly opt-in breach check
+that uses k-anonymity — the browser sends a five-character SHA-1 prefix to
+`api.pwnedpasswords.com`, never the password or the full hash.
+
+The site's URL engine is generated from `src/security/` by `npm run site:sync`, and
+`npm run site:check` fails if the copy drifts, so a fix in one place applies to the
+extension and the website together. Serve it with `npm run site:serve`
+(`http://localhost:8099`); the tools are ES modules and need HTTP rather than
+`file://`. `netlify.toml` and `site/_headers` apply a strict Content-Security-Policy (no
+inline scripts or styles) and the usual protective headers; `npm run site:zip`
+builds an upload archive for drag-and-drop hosts. Deployment notes are in
+`site/README.md`.
+
 ## Architecture
 
 ```text
@@ -94,8 +131,12 @@ src/popup/                       compact current-site controls
 src/dashboard/                   full dashboard and list management
 src/warning/                     navigation interstitial
 src/ui/common.css                shared visual design
+site/                            static security-tools website (no build step)
+site/assets/js/engine/           generated copies of src/security for the site
 tests/                           safe logic fixtures and local rule demo
 scripts/check.mjs                manifest and rule audit
+scripts/check-site.mjs           site links, accessibility basics and engine drift
+scripts/sync-site-engine.mjs     copies the shared analysis engine into the site
 ```
 
 The worker observes top-level HTTP(S) navigation with `webNavigation.onBeforeNavigate`, analyzes the URL, and uses `tabs.update` to show the extension warning page. It stores the pending original URL in Chrome's temporary `storage.session` for that tab, so the warning and one-time bypass survive a service-worker restart. Clicking **Continue anyway** grants one navigation attempt for that exact URL, expiring after two minutes. No persistent exception is added; session data is discarded when the browser session ends.
@@ -141,7 +182,9 @@ Chrome 120 or newer is required for the demonstrated Chrome setup. Browser versi
 
 ## Testing and live demonstration
 
-Run `npm test` for URL parsing, domain normalization, IP/punycode, subdomain and lookalike scoring, allowlist/blocklist precedence, and feed parsing. Run `npm run check` for the MV3 manifest, rule IDs, and unsafe-code patterns.
+Run `npm run site:check` for the website: broken internal links, images without alt
+text, labels without matching inputs, unexpected external hosts, and drift between
+the site's analysis engine and `src/security`. Run `npm test` for URL parsing, domain normalization, IP/punycode, subdomain and lookalike scoring, allowlist/blocklist precedence, feed parsing, dynamic-rule budgeting and statistics batching. Run `npm run check` for the MV3 manifest, rule IDs, and unsafe-code patterns. Both are dependency-free and run on Node 20 or newer.
 
 For a safe live demonstration:
 
@@ -156,7 +199,7 @@ The demo file issues requests to ordinary ad/tracker endpoints. It contains no m
 
 ## How counts are obtained
 
-Ad and tracker counters increase only from Chrome's `onRuleMatchedDebug` event for the corresponding blocking rulesets. This [feedback event is only available to unpacked extensions](https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest). **Packed/Store installs still block requests, but cannot provide these lifetime counters through this API.** This version is intended for an unpacked academic demonstration. Suspected-phishing and known-malicious counts increase after BrowserGuard opens a warning page and decrease if the user continues. User-added blocklist domains have their own category because they are not independently verified threats. History records whether the user continued.
+Ad and tracker counters increase only from Chrome's `onRuleMatchedDebug` event for the corresponding blocking rulesets. Matches are buffered briefly and written in one batch, so a page that blocks dozens of requests does not trigger dozens of storage writes; a pending batch is flushed before the popup or dashboard reads state. This [feedback event is only available to unpacked extensions](https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest). **Packed/Store installs still block requests, but cannot provide these lifetime counters through this API.** This version is intended for an unpacked academic demonstration. Suspected-phishing and known-malicious counts increase after BrowserGuard opens a warning page and decrease if the user continues. User-added blocklist domains have their own category because they are not independently verified threats. History records whether the user continued.
 
 ## Limitations
 
@@ -167,6 +210,8 @@ Ad and tracker counters increase only from Chrome's `onRuleMatchedDebug` event f
 - URLhaus and custom DNR rules block matching subresources. The top-level interstitial is driven by navigation analysis; download contents are not scanned.
 - The bundled ad/tracker rules intentionally cover a maintainable set of common services rather than a complete commercial filter list. First-party trackers and script-created popups may escape them.
 - Chrome feedback counters are unavailable for packed installs. This is a platform restriction, not an estimated statistic.
+- Chrome caps dynamic rules at 5,000 below version 121 and 30,000 safe dynamic rules from version 121. BrowserGuard applies as much of the downloaded feed as that budget allows and reports the enforced count; the remainder is still checked locally by the link checker and navigation analysis, which read the full stored feed.
+- Buffered counters can lose a few increments if the service worker is terminated in the second before a flush. The counts remain a record of observed events, not a billing-grade total.
 
 ## Future improvements
 

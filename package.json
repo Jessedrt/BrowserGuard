@@ -1,11 +1,16 @@
 {
   "name": "browserguard",
-  "version": "1.6.2",
+  "version": "1.7.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test --test-isolation=none --test-concurrency=1 tests/*.test.js",
+    "test": "node --test --test-concurrency=1 tests/*.test.js",
     "check": "node scripts/check.mjs",
-    "icons": "node scripts/make-icons.mjs"
+    "icons": "node scripts/make-icons.mjs",
+    "site:sync": "node scripts/sync-site-engine.mjs",
+    "site:check": "node scripts/check-site.mjs",
+    "site:serve": "python3 -m http.server 8099 --directory site",
+    "site:zip": "node scripts/build-site-zip.mjs",
+    "site:url": "node scripts/set-site-url.mjs"
   }
 }

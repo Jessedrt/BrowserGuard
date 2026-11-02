@@ -7,12 +7,17 @@ const RULE_ALLOW_START = 100000;
 const RULE_CUSTOM_START = 200000;
 const RULE_FEED_START = 300000;
 const MAX_FEED = 15000;
+// Chrome guarantees 5,000 dynamic rules below v121 and 30,000 safe dynamic rules
+// from v121. Leave headroom so one oversized feed can never reject the whole set.
+const RULE_HEADROOM = 500;
 const YOUTUBE_SCRIPTS = [
   {id: 'browserguard-youtube-www', host: 'www.youtube.com'},
   {id: 'browserguard-youtube-mobile', host: 'm.youtube.com'}
 ];
 let mutation = Promise.resolve();
 let rulesSync = Promise.resolve();
+const pendingCounts = {ads: 0, trackers: 0};
+let countTimer = null;
 
 async function showSiteBadge(tabId, analysis, settings) {
   if (!chrome.action?.setBadgeText) return;
@@ -94,6 +99,35 @@ function domainRule(id, domain, type) {
   };
 }
 
+function dynamicRuleLimit() {
+  const declared = Number(chrome.declarativeNetRequest?.MAX_NUMBER_OF_DYNAMIC_RULES);
+  const limit = Number.isFinite(declared) && declared > 0 ? declared : 5000;
+  return Math.max(1000, limit - RULE_HEADROOM);
+}
+
+// Builds a rule set that fits the browser's dynamic-rule quota: allowlist first,
+// then the user's blocklist, then as much of the threat feed as space allows.
+function buildDynamicRules(state, feedLimit = Infinity) {
+  const limit = dynamicRuleLimit();
+  const addRules = [];
+  for (const [index, domain] of state.allowlist.slice(0, Math.floor(limit / 2)).entries()) {
+    addRules.push(domainRule(RULE_ALLOW_START + index, domain, 'allow'));
+    addRules.push({id: RULE_ALLOW_START + 30000 + index, priority: 100, action: {type: 'allow'}, condition: {initiatorDomains: [domain], resourceTypes: ['script','image','xmlhttprequest','sub_frame','media','font','ping','other']}});
+  }
+  let feedRules = 0;
+  if (state.settings.malicious) {
+    const blockBudget = Math.max(0, limit - addRules.length);
+    const custom = state.blocklist.slice(0, blockBudget);
+    custom.forEach((domain, index) => addRules.push(domainRule(RULE_CUSTOM_START + index, domain, 'block')));
+    const feedBudget = Math.min(MAX_FEED, feedLimit, Math.max(0, blockBudget - custom.length));
+    for (const [index, domain] of state.feed.slice(0, feedBudget).entries()) {
+      addRules.push(domainRule(RULE_FEED_START + index, domain, 'block'));
+      feedRules++;
+    }
+  }
+  return {addRules, feedRules};
+}
+
 async function syncRules() {
   const state = await getState();
   const enabled = [];
@@ -101,16 +135,21 @@ async function syncRules() {
   if (state.settings.trackers) enabled.push('trackers');
   await chrome.declarativeNetRequest.updateEnabledRulesets({enableRulesetIds: enabled, disableRulesetIds: ['ads','trackers'].filter(x => !enabled.includes(x))});
   const current = await chrome.declarativeNetRequest.getDynamicRules();
-  const addRules = [];
-  state.allowlist.forEach((domain, index) => {
-    addRules.push(domainRule(RULE_ALLOW_START + index, domain, 'allow'));
-    addRules.push({id: RULE_ALLOW_START + 30000 + index, priority: 100, action: {type: 'allow'}, condition: {initiatorDomains: [domain], resourceTypes: ['script','image','xmlhttprequest','sub_frame','media','font','ping','other']}});
-  });
-  if (state.settings.malicious) {
-    state.blocklist.forEach((domain, index) => addRules.push(domainRule(RULE_CUSTOM_START + index, domain, 'block')));
-    state.feed.slice(0, MAX_FEED).forEach((domain, index) => addRules.push(domainRule(RULE_FEED_START + index, domain, 'block')));
+  const removeRuleIds = current.map(x => x.id);
+  const full = buildDynamicRules(state);
+  try {
+    await chrome.declarativeNetRequest.updateDynamicRules({removeRuleIds, addRules: full.addRules});
+    await updateState({ruleError: null, feedRulesApplied: full.feedRules, dynamicRuleCount: full.addRules.length});
+  } catch (error) {
+    // A quota or validation error must not leave the user with no rules at all.
+    const fallback = buildDynamicRules(state, 0);
+    await chrome.declarativeNetRequest.updateDynamicRules({removeRuleIds, addRules: fallback.addRules});
+    await updateState({
+      feedRulesApplied: fallback.feedRules, dynamicRuleCount: fallback.addRules.length,
+      ruleError: `The browser rejected the full rule set (${error.message}). Your lists are active; fewer feed domains are enforced.`
+    });
+    console.warn('BrowserGuard applied a reduced rule set:', error);
   }
-  await chrome.declarativeNetRequest.updateDynamicRules({removeRuleIds: current.map(x => x.id), addRules});
   const registered = await chrome.scripting.getRegisteredContentScripts({ids: YOUTUBE_SCRIPTS.map(script => script.id)});
   const active = new Set(registered.map(script => script.id));
   for (const script of YOUTUBE_SCRIPTS) {
@@ -125,7 +164,6 @@ async function syncRules() {
       await chrome.scripting.unregisterContentScripts({ids: [script.id]});
     }
   }
-  await updateState({ruleError: null});
 }
 
 function scheduleSync() {
@@ -134,7 +172,33 @@ function scheduleSync() {
     await updateState({ruleError: `Protection rules could not be applied: ${error.message}`});
     console.error('BrowserGuard rule sync failed:', error);
   });
-  return next;
+  // Settings stay saved even when rule application fails; the state carries ruleError.
+  return next.then(() => ({ok: true}), error => ({ok: false, error: error.message}));
+}
+
+async function flushCounts() {
+  if (countTimer) { clearTimeout(countTimer); countTimer = null; }
+  const ads = pendingCounts.ads, trackers = pendingCounts.trackers;
+  if (!ads && !trackers) return;
+  pendingCounts.ads = 0;
+  pendingCounts.trackers = 0;
+  try {
+    await locked(async () => {
+      const state = await getState();
+      state.stats.ads += ads;
+      state.stats.trackers += trackers;
+      await updateState({stats: state.stats});
+    });
+  } catch (error) {
+    pendingCounts.ads += ads;
+    pendingCounts.trackers += trackers;
+    throw error;
+  }
+}
+
+function queueCount(key) {
+  pendingCounts[key]++;
+  if (!countTimer) countTimer = setTimeout(() => { flushCounts().catch(error => console.warn('BrowserGuard counters not saved yet:', error)); }, 1200);
 }
 
 async function refreshFeed(force = false) {
@@ -192,11 +256,8 @@ if (chrome.declarativeNetRequest.onRuleMatchedDebug) {
   chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(info => {
     const key = info.rule.rulesetId === 'ads' ? 'ads' : info.rule.rulesetId === 'trackers' ? 'trackers' : null;
     if (!key) return;
-    locked(async () => {
-      const state = await getState();
-      state.stats[key]++;
-      await updateState({stats: state.stats});
-    }).catch(console.error);
+    // Batch bursts of matches into one storage write instead of one per request.
+    queueCount(key);
   });
 }
 
@@ -221,6 +282,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 async function handleMessage(message, sender) {
   if (!message || typeof message.type !== 'string') throw new Error('Invalid request');
+  await flushCounts();
   if (message.type === 'STATE') return getState();
   if (message.type === 'ANALYZE') {
     const state = await getState();
